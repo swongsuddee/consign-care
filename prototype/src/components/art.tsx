@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import { cx } from "./ui";
+import { asset } from "@/lib/base";
 
 export function Logo({ className, light }: { className?: string; light?: boolean }) {
   return (
@@ -158,7 +159,7 @@ export function PhotoThumb({ url, className }: { url: string; className?: string
   if (url.startsWith("/samples/")) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={url} alt="usage sheet" className={cx("rounded-xl bg-white object-cover object-top", className)} />
+      <img src={asset(url)} alt="usage sheet" className={cx("rounded-xl bg-white object-cover object-top", className)} />
     );
   }
   if (url.startsWith("sample-")) {

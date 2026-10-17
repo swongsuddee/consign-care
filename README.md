@@ -10,6 +10,8 @@
 | [`prototype/public/presentation/`](prototype/public/presentation) | 15-slide project deck, plain HTML. Served at `/presentation/index.html` and linked from the landing page; also opens straight from the file. |
 | [`exports/`](exports) | Sample quotation export (PDF, Excel). |
 
+Live demo (GitHub Pages, after it is enabled): https://swongsuddee.github.io/consign-care/
+
 ```bash
 cd prototype && npm install && npm run dev   # http://localhost:3000
 ```

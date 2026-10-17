@@ -2,6 +2,7 @@
 
 import { parseSticker } from "./selectors";
 import type { CasePhoto } from "./types";
+import { asset, STATIC_SITE } from "./base";
 
 /**
  * Reads usage-sheet photos into patients and the stickers under each.
@@ -82,7 +83,7 @@ const SAMPLE: Extraction = {
 async function photoBlob(p: CasePhoto): Promise<Blob | undefined> {
   const o = originals.get(p.id);
   if (o) return o;
-  if (p.url.startsWith("data:") || p.url.startsWith("/")) return (await fetch(p.url)).blob();
+  if (p.url.startsWith("data:") || p.url.startsWith("/")) return (await fetch(asset(p.url))).blob();
   return undefined;
 }
 
@@ -101,7 +102,8 @@ async function forUpload(blob: Blob): Promise<Blob> {
 async function viaAi(blob: Blob): Promise<Extraction | null> {
   const form = new FormData();
   form.append("image", await forUpload(blob), "sheet.jpg");
-  const r = await fetch("/api/extract", { method: "POST", body: form }).catch(() => null);
+  if (STATIC_SITE) return null;
+  const r = await fetch(asset("/api/extract"), { method: "POST", body: form }).catch(() => null);
   if (!r || !r.ok) return null;
   const j = await r.json();
   return {
@@ -122,7 +124,7 @@ let zxingReady: Promise<typeof import("zxing-wasm/reader")> | null = null;
 function zxing() {
   zxingReady ??= import("zxing-wasm/reader").then((m) => {
     m.prepareZXingModule({
-      overrides: { locateFile: (path: string, prefix: string) => (path.endsWith(".wasm") ? "/wasm/zxing_reader.wasm" : prefix + path) },
+      overrides: { locateFile: (path: string, prefix: string) => (path.endsWith(".wasm") ? asset("/wasm/zxing_reader.wasm") : prefix + path) },
     });
     return m;
   });
@@ -211,6 +213,7 @@ export async function extract(photos: CasePhoto[], opts: { ai: boolean }): Promi
 }
 
 export async function aiAvailable(): Promise<boolean> {
-  const r = await fetch("/api/extract").catch(() => null);
+  if (STATIC_SITE) return false;
+  const r = await fetch(asset("/api/extract")).catch(() => null);
   return !!r?.ok && !!(await r.json()).ai;
 }

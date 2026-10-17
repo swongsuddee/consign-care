@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "NODE_OPTIONS=--dns-result-order=ipv4first next build",
     "start": "next start",
+    "build:pages": "node scripts/build-pages.mjs",
+    "preview:pages": "npx serve out -l 3200",
     "lint": "eslint"
   },
   "dependencies": {

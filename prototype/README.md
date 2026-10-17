@@ -31,6 +31,26 @@ npm run start -- -p 3100 -H 0.0.0.0   # production
 The stack is Node 18 compatible: Next.js 15, React 19, TypeScript, Tailwind CSS v3, zustand, lucide-react, recharts,
 SheetJS (xlsx), and @zxing/browser for camera barcode scanning.
 
+## Deploy to GitHub Pages
+
+`.github/workflows/pages.yml` (at the repository root) builds a static copy of the prototype and publishes it on every
+push to `main`. Turn it on once in **Settings › Pages › Source: GitHub Actions**; the site is then at
+`https://<user>.github.io/consign-care/`.
+
+```bash
+BASE_PATH=/consign-care npm run build:pages   # static site in out/
+npm run preview:pages                          # serves out/ on :3200 (build without BASE_PATH to browse it at /)
+```
+
+What differs on the static site:
+
+- **No server, so no AI reading.** `/api/extract` is left out of the build; photos are read by the on-device barcode
+  decoder and the sample sheet uses its fixed transcription.
+- **Every seeded record has its own page** (cases, quotations, requisitions, PRs, products, accounts, printable
+  documents). A record created in the browser has none, so GitHub Pages serves `404.html`, which forwards to the
+  route's `_` page with the id in the query (`/m/cases/_/?id=case-…`). `useRouteParam` reads it from there.
+- Files in `public/` are referenced through `asset()` (`src/lib/base.ts`) so they resolve under the base path.
+
 ## Routes
 
 | Area | Routes |

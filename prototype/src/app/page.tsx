@@ -34,9 +34,10 @@ import { useT } from "@/i18n";
 import { name } from "@/lib/selectors";
 import { useStore } from "@/lib/store";
 import type { Role } from "@/lib/types";
+import { asset } from "@/lib/base";
 
 /** The project deck: plain HTML in public/presentation, served as a static page. */
-const DECK = "/presentation/index.html";
+const DECK = asset("/presentation/index.html");
 
 const PILLARS = [
   { key: "faster", icon: Zap, tone: "bg-blue-50 text-blue-600" },

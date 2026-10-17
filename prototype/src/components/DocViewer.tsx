@@ -10,6 +10,7 @@ import { useT } from "@/i18n";
 import { docFor } from "@/lib/documents";
 import { downloadDocExcel, downloadDocPdf } from "@/lib/exportDoc";
 import { useData } from "@/lib/store";
+import { asset } from "@/lib/base";
 
 export type DocKind = DocProps["kind"];
 
@@ -93,7 +94,7 @@ function Viewer({ doc, kind, id, onClose }: { doc: DocProps; kind: DocKind; id: 
         <Button size="sm" className="!bg-emerald-600 hover:!bg-emerald-700" onClick={() => void save("xlsx")} loading={busy === "xlsx"}>
           <FileSpreadsheet className="h-4 w-4" /> <span className="hidden sm:inline">{t("doc.downloadExcel")}</span><span className="sm:hidden">Excel</span>
         </Button>
-        <Button size="sm" variant="ghost" className="hidden text-white hover:bg-white/10 sm:inline-flex" onClick={() => window.open(`/print/${kind}/${id}?print=1`, "_blank")}>
+        <Button size="sm" variant="ghost" className="hidden text-white hover:bg-white/10 sm:inline-flex" onClick={() => window.open(asset(`/print/${kind}/${id}?print=1`), "_blank")}>
           <Printer className="h-4 w-4" /> {t("doc.print")}
         </Button>
         <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-lg hover:bg-white/10" aria-label={t("g.close")}>
