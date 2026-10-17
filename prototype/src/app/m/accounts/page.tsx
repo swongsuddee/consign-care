@@ -19,12 +19,12 @@ export default function AccountsPage() {
 
   return (
     <MScreen title={t("m.accounts.title")} back="/m/home">
-      <div className="space-y-3 p-4">
-        <div className="relative">
+      <div className="grid gap-3 p-4 @3xl/app:grid-cols-2">
+        <div className="relative @3xl/app:col-span-2">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("m.accounts.search")} className="h-11 pl-9" />
         </div>
-        {list.length === 0 && <EmptyState title={t("g.noResults")} />}
+        {list.length === 0 && <EmptyState title={t("g.noResults")} className="@3xl/app:col-span-2" />}
         {list.map((h) => {
           const s = hospitalStats(d, h.id);
           const rows = [

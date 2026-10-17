@@ -42,8 +42,8 @@ export default function HomePage() {
         </div>
       }
     >
-      <div className="h-10 bg-navy-700" />
-      <div className="-mt-10 space-y-5 pb-6">
+      <div className="h-10 bg-navy-700 @3xl/app:hidden" />
+      <div className="-mt-10 space-y-5 pb-6 @3xl/app:mt-0 @3xl/app:pt-5">
         <div className="relative mx-4 rounded-3xl bg-white p-4 shadow-card">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-slate-800">
@@ -53,7 +53,7 @@ export default function HomePage() {
               {t("g.viewAll")}
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 @3xl/app:grid-cols-4">
             <StatTile tone="blue" value={stats.casesMonth} label={t("m.home.myCases")} onClick={() => router.push("/m/cases?f=month")} />
             <StatTile tone="orange" value={stats.waitingPo} label={t("m.home.waitingPo")} onClick={() => router.push("/m/cases?f=po")} />
             <StatTile tone="green" value={stats.waitingBilling} label={t("m.home.waitingBilling")} onClick={() => router.push("/m/cases?f=billing")} />

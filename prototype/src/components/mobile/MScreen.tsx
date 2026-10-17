@@ -8,6 +8,12 @@ import { useT } from "@/i18n";
 import { LangToggle } from "../LangToggle";
 import { cx } from "../ui";
 
+/**
+ * Width of the screen's content. The app is a container (`@container/app` in the /m layout): on a phone the content is
+ * the full width, on an iPad (768 px and up) a centred 720 px column, on a web page (1024 px and up) 960 px.
+ */
+export const COLUMN = "mx-auto w-full @3xl/app:max-w-[720px] @5xl/app:max-w-[960px]";
+
 /** One mobile screen: navy header + scroll body + optional bottom tab bar */
 export function MScreen({
   title,
@@ -34,6 +40,7 @@ export function MScreen({
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col bg-slate-50">
       <div className="shrink-0 bg-gradient-to-b from-navy-800 to-navy-700 text-white">
+        <div className={COLUMN}>
         {header ?? (
           <div className="flex h-14 items-center gap-2 px-3">
             {back ? (
@@ -54,9 +61,16 @@ export function MScreen({
             </div>
           </div>
         )}
+        </div>
       </div>
-      <div className={cx("thin-scrollbar min-h-0 flex-1 overflow-y-auto", bodyClassName)}>{children}</div>
-      {footer && <div className="shrink-0 border-t border-slate-100 bg-white px-4 py-3">{footer}</div>}
+      <div className={cx("thin-scrollbar min-h-0 flex-1 overflow-y-auto", bodyClassName)}>
+        <div className={cx(COLUMN, "min-h-full")}>{children}</div>
+      </div>
+      {footer && (
+        <div className="shrink-0 border-t border-slate-100 bg-white px-4 py-3">
+          <div className={COLUMN}>{footer}</div>
+        </div>
+      )}
       {tabs && <TabBar />}
     </div>
   );
@@ -74,8 +88,8 @@ export function TabBar() {
   const { t } = useT();
   const path = usePathname() ?? "";
   return (
-    <nav className="relative shrink-0 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] md:pb-3">
-      <div className="grid grid-cols-5">
+    <nav className="relative shrink-0 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] desk:group-data-[view=ipad]/app:pb-3 desk:group-data-[view=mobile]/app:pb-3">
+      <div className={cx(COLUMN, "grid grid-cols-5 @3xl/app:max-w-[560px]")}>
         {TABS.map((tab) => {
           const active = path.startsWith(tab.href);
           const Icon = tab.icon;

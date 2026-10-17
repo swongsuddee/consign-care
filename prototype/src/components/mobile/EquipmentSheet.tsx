@@ -91,8 +91,8 @@ export function EquipmentSheet({
   const total = picked.reduce((a, x) => a + x.qty, 0);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end bg-slate-900/50 backdrop-blur-[2px] animate-fade-in" onClick={onClose}>
-      <div className="flex max-h-[85%] w-full flex-col rounded-t-3xl bg-white shadow-2xl animate-slide-up" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t("m.new.sheetTitle")}>
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-slate-900/50 backdrop-blur-[2px] animate-fade-in" onClick={onClose}>
+      <div className="flex max-h-[85%] w-full flex-col rounded-t-3xl bg-white @3xl/app:max-w-[640px] shadow-2xl animate-slide-up" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t("m.new.sheetTitle")}>
         <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-slate-300" />
         <div className="flex items-center justify-between px-4 pb-2 pt-2">
           <div className="min-w-0">

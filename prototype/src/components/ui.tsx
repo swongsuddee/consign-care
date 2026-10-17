@@ -55,7 +55,7 @@ export function Button({
 
 export function Card({ className, children, ...rest }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div {...rest} className={cx("rounded-2xl border border-slate-100 bg-white shadow-card", className)}>
+    <div {...rest} className={cx("min-w-0 rounded-2xl border border-slate-100 bg-white shadow-card", className)}>
       {children}
     </div>
   );
@@ -241,9 +241,9 @@ export function Tabs<T extends string>({
 
 /* ---------------------------------------------------------------- States */
 
-export function EmptyState({ icon, title, desc, action }: { icon?: ReactNode; title: ReactNode; desc?: ReactNode; action?: ReactNode }) {
+export function EmptyState({ icon, title, desc, action, className }: { icon?: ReactNode; title: ReactNode; desc?: ReactNode; action?: ReactNode; className?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
+    <div className={cx("flex flex-col items-center justify-center px-6 py-12 text-center", className)}>
       <div className="mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-slate-50 text-slate-400 ring-1 ring-slate-100">
         {icon ?? <Inbox className="h-6 w-6" />}
       </div>

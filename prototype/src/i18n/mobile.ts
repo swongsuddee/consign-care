@@ -11,6 +11,10 @@ export const mobile: Dict = {
 
   // presenter panel
   "m.p.title": { th: "แอปผู้แทนขาย", en: "Sales Rep App" },
+  "m.p.view": { th: "มุมมอง", en: "View" },
+  "m.p.vMobile": { th: "มือถือ", en: "Mobile" },
+  "m.p.vIpad": { th: "iPad", en: "iPad" },
+  "m.p.vWeb": { th: "เว็บ", en: "Web" },
   "m.p.subtitle": { th: "แอปมือถือ (PWA) สำหรับผู้แทนขายที่ดูแลโรงพยาบาล", en: "Mobile (PWA) app for sales reps in the field" },
   "m.p.jump": { th: "ไปยังหน้าจอ", en: "Jump to screen" },
   "m.p.login": { th: "1 · เข้าสู่ระบบ", en: "1 · Login" },

@@ -96,8 +96,8 @@ function CasesList() {
             </button>
           ))}
         </div>
-        <div className="space-y-2.5">
-          {list.length === 0 && <EmptyState title={t("g.noResults")} />}
+        <div className="grid gap-2.5 @3xl/app:grid-cols-2">
+          {list.length === 0 && <EmptyState title={t("g.noResults")} className="@3xl/app:col-span-2" />}
           {list.map((c) => (
             <CaseRow key={c.id} c={c} d={d} />
           ))}
