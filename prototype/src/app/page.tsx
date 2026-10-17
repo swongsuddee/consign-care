@@ -35,7 +35,7 @@ import { name } from "@/lib/selectors";
 import { useStore } from "@/lib/store";
 import type { Role } from "@/lib/types";
 
-/** The project deck, served as a static page from public/presentation (a copy of exports/presentation). */
+/** The project deck: plain HTML in public/presentation, served as a static page. */
 const DECK = "/presentation/index.html";
 
 const PILLARS = [

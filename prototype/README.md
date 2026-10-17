@@ -2,8 +2,8 @@
 
 "From Case to Billing, All in One Place." This is a clickable prototype of a consignment case-tracking and procurement
 platform for a Thai medical-device distributor. It includes a sales-rep mobile app (`/m`), a back-office web app
-(`/admin`), a presentation landing page (`/`) and the project slide deck (`/presentation/index.html`, a copy of
-`../exports/presentation`).
+(`/admin`), a presentation landing page (`/`) and the project slide deck
+(`/presentation/index.html`, plain HTML in `public/presentation`).
 
 > **All data is mock data.** It is seeded from `src/lib/seed.ts` and persisted in the browser's `localStorage`.
 > Data lives in the browser (localStorage). Email, LINE, SSO and the hospital's PO reply are simulated.

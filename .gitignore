@@ -11,3 +11,6 @@
 node_modules/
 .next/
 .env*
+
+# offline single-file build of the deck (the deck itself is prototype/public/presentation)
+/exports/presentation/

@@ -4,10 +4,10 @@
 
 | Folder | What it is |
 | --- | --- |
-| [`prototype/`](prototype) | Clickable Next.js prototype: rep mobile app (`/m`), back office (`/admin`), landing page (`/`), slide deck (`/presentation/index.html`). See its [README](prototype/README.md) and [DEMO](prototype/DEMO.md). |
+| [`prototype/`](prototype) | Clickable Next.js prototype: rep mobile app (`/m`), back office (`/admin`), landing page (`/`). See its [README](prototype/README.md) and [DEMO](prototype/DEMO.md). |
 | [`design/`](design) | System design source for Truss: brand, domain model, specification. |
 | [`docs/`](docs) | Domain notes. |
-| [`exports/presentation/`](exports/presentation) | 15-slide project deck. `ConsignCare-presentation.html` is a single file with the images built in. |
+| [`prototype/public/presentation/`](prototype/public/presentation) | 15-slide project deck, plain HTML. Served at `/presentation/index.html` and linked from the landing page; also opens straight from the file. |
 | [`exports/`](exports) | Sample quotation export (PDF, Excel). |
 
 ```bash
