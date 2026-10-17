@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="340" height="72" viewBox="0 0 340 72"><rect width="340" height="72" fill="#0f2d5c"/><g transform="translate(4 4)">
+  <rect width="64" height="64" rx="14" fill="#ffffff"/>
+  <path d="M44 20.5A16 16 0 1 0 44 43.5" fill="none" stroke="#0f2d5c" stroke-width="7" stroke-linecap="round"/>
+  <path d="M33 32l5 5 10-11" fill="none" stroke="#2563eb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <text x="80" y="38" font-family="'IBM Plex Sans Thai','Noto Sans Thai',Arial,sans-serif" font-size="30" font-weight="700" fill="#ffffff">Consign<tspan fill="#2563eb">Care</tspan></text>
+  <text x="81" y="57" font-family="'Noto Sans Thai',Arial,sans-serif" font-size="12.5" fill="#b9cdf5" letter-spacing=".4">Case to Billing · All in one place</text></svg>

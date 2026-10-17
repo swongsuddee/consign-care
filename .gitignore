@@ -1,0 +1,13 @@
+# original photos and screenshots: real patient data, kept local (the redacted sample is prototype/public/samples)
+/IMG_*
+
+# Truss exports
+/exports/truss/
+/design/*.truss.zip
+
+# local tooling
+.DS_Store
+/.claude/
+node_modules/
+.next/
+.env*

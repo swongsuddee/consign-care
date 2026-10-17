@@ -1,0 +1,405 @@
+[
+  {
+    "id": "fnd-0",
+    "code": "COMPOUND_ACTION",
+    "severity": "info",
+    "stage": "activity",
+    "target": {
+      "kind": "flowNode",
+      "id": "sc3",
+      "useCaseId": "uc-scan"
+    },
+    "title": "\"Decode GTIN, lot and expiry\" does two things",
+    "why": "An action joined by \"and\" usually hides a decision or a second step. Splitting it makes the failure case between the two halves visible.",
+    "source": "rule"
+  },
+  {
+    "id": "fnd-1",
+    "code": "COMPOUND_ACTION",
+    "severity": "info",
+    "stage": "activity",
+    "target": {
+      "kind": "flowNode",
+      "id": "se5",
+      "useCaseId": "uc-search"
+    },
+    "title": "\"Show stock by location and lot\" does two things",
+    "why": "An action joined by \"and\" usually hides a decision or a second step. Splitting it makes the failure case between the two halves visible.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-0",
+    "code": "UNMAPPED_ENTITIES",
+    "severity": "info",
+    "stage": "class",
+    "target": {
+      "kind": "entity",
+      "id": "ent-user"
+    },
+    "title": "12 entities have no class",
+    "why": "User, Hospital, Doctor, Supplier, Product, Location, Lot, Stock Balance, Quotation Item, Requisition Item, Purchase Request Item, Activity Log — persisted but never represented in code. Sometimes correct, often a gap.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-1",
+    "code": "NO_SEQUENCE",
+    "severity": "info",
+    "stage": "sequence",
+    "target": {
+      "kind": "useCase",
+      "id": "uc-new-case"
+    },
+    "title": "No sequence for \"Record a surgical case\"",
+    "why": "Stage 2 says what happens; stage 6 says which component does it and in what order. Drawing it is where an architecture stops being a picture of boxes.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-2",
+    "code": "NO_SEQUENCE",
+    "severity": "info",
+    "stage": "sequence",
+    "target": {
+      "kind": "useCase",
+      "id": "uc-scan"
+    },
+    "title": "No sequence for \"Scan a product barcode\"",
+    "why": "Stage 2 says what happens; stage 6 says which component does it and in what order. Drawing it is where an architecture stops being a picture of boxes.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-3",
+    "code": "NO_SEQUENCE",
+    "severity": "info",
+    "stage": "sequence",
+    "target": {
+      "kind": "useCase",
+      "id": "uc-cancel"
+    },
+    "title": "No sequence for \"Cancel a case\"",
+    "why": "Stage 2 says what happens; stage 6 says which component does it and in what order. Drawing it is where an architecture stops being a picture of boxes.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-4",
+    "code": "NO_SEQUENCE",
+    "severity": "info",
+    "stage": "sequence",
+    "target": {
+      "kind": "useCase",
+      "id": "uc-history"
+    },
+    "title": "No sequence for \"Trace a product's usage history\"",
+    "why": "Stage 2 says what happens; stage 6 says which component does it and in what order. Drawing it is where an architecture stops being a picture of boxes.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-5",
+    "code": "NO_SEQUENCE",
+    "severity": "info",
+    "stage": "sequence",
+    "target": {
+      "kind": "useCase",
+      "id": "uc-approve"
+    },
+    "title": "No sequence for \"Approve a pending document\"",
+    "why": "Stage 2 says what happens; stage 6 says which component does it and in what order. Drawing it is where an architecture stops being a picture of boxes.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-6",
+    "code": "NO_SEQUENCE",
+    "severity": "info",
+    "stage": "sequence",
+    "target": {
+      "kind": "useCase",
+      "id": "uc-followup"
+    },
+    "title": "No sequence for \"Follow up a quotation awaiting PO\"",
+    "why": "Stage 2 says what happens; stage 6 says which component does it and in what order. Drawing it is where an architecture stops being a picture of boxes.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-7",
+    "code": "NO_SEQUENCE",
+    "severity": "info",
+    "stage": "sequence",
+    "target": {
+      "kind": "useCase",
+      "id": "uc-pr"
+    },
+    "title": "No sequence for \"Raise a purchase request\"",
+    "why": "Stage 2 says what happens; stage 6 says which component does it and in what order. Drawing it is where an architecture stops being a picture of boxes.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-8",
+    "code": "NO_SEQUENCE",
+    "severity": "info",
+    "stage": "sequence",
+    "target": {
+      "kind": "useCase",
+      "id": "uc-receive"
+    },
+    "title": "No sequence for \"Receive goods from a supplier\"",
+    "why": "Stage 2 says what happens; stage 6 says which component does it and in what order. Drawing it is where an architecture stops being a picture of boxes.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-9",
+    "code": "NO_SEQUENCE",
+    "severity": "info",
+    "stage": "sequence",
+    "target": {
+      "kind": "useCase",
+      "id": "uc-search"
+    },
+    "title": "No sequence for \"Search inventory\"",
+    "why": "Stage 2 says what happens; stage 6 says which component does it and in what order. Drawing it is where an architecture stops being a picture of boxes.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-10",
+    "code": "NO_SEQUENCE",
+    "severity": "info",
+    "stage": "sequence",
+    "target": {
+      "kind": "useCase",
+      "id": "uc-expiry"
+    },
+    "title": "No sequence for \"Monitor expiring consignment stock\"",
+    "why": "Stage 2 says what happens; stage 6 says which component does it and in what order. Drawing it is where an architecture stops being a picture of boxes.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-11",
+    "code": "NO_SEQUENCE",
+    "severity": "info",
+    "stage": "sequence",
+    "target": {
+      "kind": "useCase",
+      "id": "uc-signin"
+    },
+    "title": "No sequence for \"Sign in to ConsignCare\"",
+    "why": "Stage 2 says what happens; stage 6 says which component does it and in what order. Drawing it is where an architecture stops being a picture of boxes.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-12",
+    "code": "NO_SEQUENCE",
+    "severity": "info",
+    "stage": "sequence",
+    "target": {
+      "kind": "useCase",
+      "id": "uc-dashboard"
+    },
+    "title": "No sequence for \"Track case progress across hospitals\"",
+    "why": "Stage 2 says what happens; stage 6 says which component does it and in what order. Drawing it is where an architecture stops being a picture of boxes.",
+    "source": "rule"
+  },
+  {
+    "id": "lat-13",
+    "code": "NO_SEQUENCE",
+    "severity": "info",
+    "stage": "sequence",
+    "target": {
+      "kind": "useCase",
+      "id": "uc-master"
+    },
+    "title": "No sequence for \"Maintain master data\"",
+    "why": "Stage 2 says what happens; stage 6 says which component does it and in what order. Drawing it is where an architecture stops being a picture of boxes.",
+    "source": "rule"
+  },
+  {
+    "id": "swm-0",
+    "code": "UNPINNED_ARTIFACT",
+    "severity": "advisory",
+    "stage": "schematests",
+    "target": null,
+    "title": "6 schema tests cannot be pinned down",
+    "why": "An enum column whose allowed values come from a lifecycle that has not been drawn. Draw it at stage 4 and the check constraint — and this test — write themselves.",
+    "source": "rule"
+  },
+  {
+    "id": "swm-1",
+    "code": "UNPINNED_ARTIFACT",
+    "severity": "advisory",
+    "stage": "unittests",
+    "target": null,
+    "title": "43 unit tests cannot be pinned down",
+    "why": "Either the class has no behaviour to test, or the states an operation is illegal in come from a lifecycle that has not been drawn.",
+    "source": "rule"
+  },
+  {
+    "id": "ui-0",
+    "code": "STEP_WITHOUT_SCREEN",
+    "severity": "info",
+    "stage": "uidesign",
+    "target": null,
+    "title": "19 steps have no screen",
+    "why": "\"AI reads the items\", \"Quotation drafted\", \"Issue the PO\", \"PO received\", \"Consignment refilled\" and others. Some of these are things the system does alone and need nothing; the rest are screens nobody has designed yet.",
+    "source": "rule"
+  },
+  {
+    "id": "stk-0",
+    "code": "STACK_BEYOND_THE_DESIGN",
+    "severity": "info",
+    "stage": "techstack",
+    "target": null,
+    "title": "9 of 19 choices answer no demand the design makes yet",
+    "why": "Tailwind CSS + shadcn/ui, NestJS, Prisma, Claude vision (claude-opus-5-5), zxing-wasm (multi-barcode, on device), ZXing (GS1 DataMatrix / Code128), AWS ECS Fargate (ap-southeast-7), GitHub Actions, OpenTelemetry + Grafana Cloud + Sentry. Perfectly reasonable things to want, but nothing in stages 1 to 8 asked for them — which is worth saying out loud before they become load-bearing.",
+    "source": "rule"
+  },
+  {
+    "id": "uic-0",
+    "code": "NO_UI_COMPONENTS",
+    "severity": "info",
+    "stage": "uiclass",
+    "target": null,
+    "title": "No component tree yet",
+    "why": "The screens name the controls; this is what renders them. Without it the front end has an inventory and no structure, and every state question gets answered per screen instead of once.",
+    "source": "rule"
+  },
+  {
+    "id": "ds-0",
+    "stage": "design",
+    "source": "rule",
+    "code": "DS_A11Y_OPEN",
+    "severity": "info",
+    "target": {
+      "kind": "designStep",
+      "id": "accessibility"
+    },
+    "title": "4 of 10 accessibility checks are open",
+    "why": "Still to confirm: everything works with a keyboard alone; tap targets are at least 24 × 24 px; colour is never the only signal (add an icon or text); and others."
+  },
+  {
+    "id": "apr-0",
+    "stage": "patterns",
+    "source": "rule",
+    "code": "STYLE_MONOLITH_MANY_STORES",
+    "severity": "advisory",
+    "target": {
+      "kind": "approach",
+      "id": "style"
+    },
+    "title": "Declared a modular monolith, but stage 5 gives it 2 separate data stores",
+    "why": "Core DB (ConsignCare API, Job Worker); File Store (ConsignCare API, Job Worker, Document Renderer). One deployable usually means one database; stores owned by different services are the shape of separate deployables. Either merge them or change the declared style."
+  },
+  {
+    "id": "ux-1",
+    "stage": "uiflow",
+    "source": "rule",
+    "code": "UX_MAIN_ACTION_COLD",
+    "severity": "advisory",
+    "target": {
+      "kind": "screen",
+      "id": "scr-m-dash"
+    },
+    "title": "My dashboard: the main action doesn't draw the eye",
+    "why": "the main action “Open a hospital account” ranks 4 of 8 hot spots; it should be in the top 3. By the rules — size, place, contrast — other parts of the screen pull harder. Give it the primary colour, more room, or a place higher up; see 🔥 Attention on its full render in UI Transition."
+  },
+  {
+    "id": "ux-2",
+    "stage": "uiflow",
+    "source": "rule",
+    "code": "UX_MAIN_ACTION_COLD",
+    "severity": "advisory",
+    "target": {
+      "kind": "screen",
+      "id": "scr-m-accounts"
+    },
+    "title": "My accounts: the main action doesn't draw the eye",
+    "why": "the main action “Open the account” ranks 4 of 4 hot spots; it should be in the top 3. By the rules — size, place, contrast — other parts of the screen pull harder. Give it the primary colour, more room, or a place higher up; see 🔥 Attention on its full render in UI Transition."
+  },
+  {
+    "id": "ux-3",
+    "stage": "uiflow",
+    "source": "rule",
+    "code": "UX_MAIN_ACTION_COLD",
+    "severity": "advisory",
+    "target": {
+      "kind": "screen",
+      "id": "scr-m-account"
+    },
+    "title": "Account detail: the main action doesn't draw the eye",
+    "why": "the main action “New case here” ranks 5 of 7 hot spots; it should be in the top 3. By the rules — size, place, contrast — other parts of the screen pull harder. Give it the primary colour, more room, or a place higher up; see 🔥 Attention on its full render in UI Transition."
+  },
+  {
+    "id": "ux-5",
+    "stage": "uiflow",
+    "source": "rule",
+    "code": "UX_MAIN_ACTION_COLD",
+    "severity": "advisory",
+    "target": {
+      "kind": "screen",
+      "id": "scr-m-ocr"
+    },
+    "title": "Confirm usage items: the main action doesn't draw the eye",
+    "why": "the main action “Add a missed item” ranks 4 of 8 hot spots; it should be in the top 3. By the rules — size, place, contrast — other parts of the screen pull harder. Give it the primary colour, more room, or a place higher up; see 🔥 Attention on its full render in UI Transition."
+  },
+  {
+    "id": "ux-7",
+    "stage": "uiflow",
+    "source": "rule",
+    "code": "UX_MAIN_ACTION_COLD",
+    "severity": "advisory",
+    "target": {
+      "kind": "screen",
+      "id": "scr-m-scan"
+    },
+    "title": "Scan barcode: the main action doesn't draw the eye",
+    "why": "the main action “View usage history” ranks 5 of 6 hot spots; it should be in the top 3. By the rules — size, place, contrast — other parts of the screen pull harder. Give it the primary colour, more room, or a place higher up; see 🔥 Attention on its full render in UI Transition."
+  },
+  {
+    "id": "ux-10",
+    "stage": "uiflow",
+    "source": "rule",
+    "code": "UX_MAIN_ACTION_COLD",
+    "severity": "advisory",
+    "target": {
+      "kind": "screen",
+      "id": "scr-w-quote"
+    },
+    "title": "Quotation editor: the main action doesn't draw the eye",
+    "why": "the main action “Generate from case” ranks 6 of 13 hot spots; it should be in the top 3. By the rules — size, place, contrast — other parts of the screen pull harder. Give it the primary colour, more room, or a place higher up; see 🔥 Attention on its full render in UI Transition."
+  },
+  {
+    "id": "ux-13",
+    "stage": "uiflow",
+    "source": "rule",
+    "code": "UX_MAIN_ACTION_COLD",
+    "severity": "advisory",
+    "target": {
+      "kind": "screen",
+      "id": "scr-w-req"
+    },
+    "title": "Requisition: the main action doesn't draw the eye",
+    "why": "the main action “Submit request” ranks 5 of 7 hot spots; it should be in the top 3. By the rules — size, place, contrast — other parts of the screen pull harder. Give it the primary colour, more room, or a place higher up; see 🔥 Attention on its full render in UI Transition."
+  },
+  {
+    "id": "ux-16",
+    "stage": "uiflow",
+    "source": "rule",
+    "code": "UX_MAIN_ACTION_COLD",
+    "severity": "advisory",
+    "target": {
+      "kind": "screen",
+      "id": "scr-w-inventory"
+    },
+    "title": "Inventory search: the main action doesn't draw the eye",
+    "why": "the main action “Search” ranks 5 of 6 hot spots; it should be in the top 3. By the rules — size, place, contrast — other parts of the screen pull harder. Give it the primary colour, more room, or a place higher up; see 🔥 Attention on its full render in UI Transition."
+  },
+  {
+    "id": "ux-18",
+    "stage": "uiflow",
+    "source": "rule",
+    "code": "UX_MAIN_ACTION_COLD",
+    "severity": "advisory",
+    "target": {
+      "kind": "screen",
+      "id": "scr-w-pr"
+    },
+    "title": "Purchase request: the main action doesn't draw the eye",
+    "why": "the main action “Submit” ranks 4 of 8 hot spots; it should be in the top 3. By the rules — size, place, contrast — other parts of the screen pull harder. Give it the primary colour, more room, or a place higher up; see 🔥 Attention on its full render in UI Transition."
+  }
+]

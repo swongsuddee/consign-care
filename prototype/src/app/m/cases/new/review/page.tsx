@@ -1,0 +1,447 @@
+"use client";
+
+import { AlertTriangle, CheckCircle2, Plus, ScanLine, Search, Sparkles, Trash2, UserRound } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { PhotoThumb, ProductArt } from "@/components/art";
+import { MScreen } from "@/components/mobile/MScreen";
+import { ScannerView } from "@/components/Scanner";
+import { toast } from "@/components/toast";
+import { Badge, Button, EmptyState, Field, Input, Modal, Select, Tabs, cx } from "@/components/ui";
+import { useT } from "@/i18n";
+import * as ops from "@/lib/ops";
+import { aiAvailable, extract, merge, type Engine, type ExtractedItem } from "@/lib/extract";
+import { stickerSamples } from "@/lib/samples";
+import { OCR_TEMPLATES } from "@/lib/seed";
+import { name, parseBarcode, parseSticker } from "@/lib/selectors";
+import { useData, useOp, useStore } from "@/lib/store";
+import type { Data } from "@/lib/types";
+
+interface Line {
+  key: string;
+  raw: string;
+  productId?: string;
+  lotId?: string;
+  lotNo?: string;
+  serialNo?: string;
+  qty: number;
+  checked: boolean;
+  confidence?: number;
+  source: "OCR" | "SCAN" | "MANUAL";
+}
+
+interface Group {
+  key: string;
+  hn: string;
+  an: string;
+  doctorId: string;
+  lines: Line[];
+}
+
+const STEPS = ["m.ocr.s1", "m.ocr.s2", "m.ocr.s3"];
+
+/** Find the hospital named on the sheet: every significant word of our hospital name must appear. */
+function matchHospital(d: Data, written?: string) {
+  if (!written) return undefined;
+  const w = written.toLowerCase().replace(/[^a-z0-9ก-๙ ]/g, " ");
+  const norm = (s: string) => s.toLowerCase().replace(/hospital|โรงพยาบาล/g, "").replace(/[^a-z0-9ก-๙ ]/g, " ").split(/\s+/).filter(Boolean);
+  return d.hospitals.find((h) => {
+    const words = norm(h.name);
+    const alt = words.map((x) => x.replace("phyathai", "phayathai"));
+    return words.every((x, i) => w.includes(x) || w.includes(alt[i])) || norm(h.nameTh).every((x) => w.includes(x));
+  });
+}
+
+function toLine(d: Data, it: ExtractedItem, source: Line["source"], key: string): Line {
+  const parsed = it.ref ? { ref: it.ref, lotNo: it.lotNo, serialNo: it.serialNo } : parseSticker(it.raw);
+  let productId: string | undefined;
+  let lotId: string | undefined;
+  if (parsed?.ref) {
+    const p = d.products.find((x) => x.ref.toUpperCase() === parsed.ref!.toUpperCase());
+    productId = p?.id;
+    lotId = p ? d.lots.find((l) => l.productId === p.id && l.lotNo === parsed.lotNo)?.id : undefined;
+  } else {
+    const r = parseBarcode(d, it.raw);
+    productId = r.product?.id;
+    lotId = r.lot?.id;
+  }
+  return {
+    key,
+    raw: it.raw,
+    productId,
+    lotId,
+    lotNo: parsed?.lotNo,
+    serialNo: parsed?.serialNo,
+    qty: it.qty ?? 1,
+    checked: !!productId,
+    confidence: it.confidence,
+    source,
+  };
+}
+
+export default function OcrReviewPage() {
+  const { t, lang } = useT();
+  const router = useRouter();
+  const d = useData();
+  const run = useOp();
+  const [draft] = useState(() => useStore.getState().ocrDraft);
+  const setDraft = useStore((s) => s.setOcrDraft);
+  const [phase, setPhase] = useState(0);
+  const [engine, setEngine] = useState<Engine>("none");
+  const [model, setModel] = useState<string>();
+  const [hospitalId, setHospitalId] = useState(draft?.hospitalId ?? "");
+  const [hospitalRead, setHospitalRead] = useState<string>();
+  const [caseDate, setCaseDate] = useState(draft?.caseDate ?? ops.DEMO_TODAY);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [adding, setAdding] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!draft) return;
+    let alive = true;
+    const t1 = setTimeout(() => alive && setPhase(1), 500);
+    (async () => {
+      const ai = await aiAvailable();
+      const cached = draft.extracted ?? {};
+      const real = draft.photos.filter((p) => !p.url.startsWith("sample-") || cached[p.id]);
+      const ex = merge([...real.filter((p) => cached[p.id]).map((p) => cached[p.id]), await extract(real.filter((p) => !cached[p.id]), { ai })]);
+      // the drawn sample sheets keep their per-procedure template
+      const legacy = draft.photos.filter((p) => p.url.startsWith("sample-") && !cached[p.id]);
+      await new Promise((r) => setTimeout(r, 900));
+      if (!alive) return;
+      setPhase(2);
+      const out: Group[] = ex.patients.map((p, gi) => ({
+        key: `g${gi}`,
+        hn: p.hn ?? (gi === 0 ? draft.patientHn ?? "" : ""),
+        an: p.an ?? "",
+        doctorId: d.doctors.find((x) => x.code && x.code === p.doctorCode)?.id ?? draft.doctorId ?? "",
+        lines: p.items.map((it, i) => toLine(d, it, "OCR", `g${gi}-${i}`)),
+      }));
+      if (legacy.length) {
+        const tpl = OCR_TEMPLATES[draft.procedure || "knee"] ?? OCR_TEMPLATES.knee;
+        out.push({
+          key: "gl",
+          hn: draft.patientHn ?? "",
+          an: "",
+          doctorId: draft.doctorId ?? "",
+          lines: tpl.map(([productId, qty], i) => ({ key: `gl-${i}`, raw: "", productId, qty, checked: true, confidence: [0.98, 0.96, 0.94, 0.91, 0.88][i] ?? 0.9, source: "OCR" })),
+        });
+      }
+      if (draft.scanned?.length || draft.picked?.length) {
+        const target = out[0] ?? { key: "gs", hn: draft.patientHn ?? "", an: "", doctorId: draft.doctorId ?? "", lines: [] };
+        target.lines.push(...(draft.scanned ?? []).map((raw, i) => toLine(d, { raw }, "SCAN", `gs-${i}`)));
+        target.lines.push(
+          ...(draft.picked ?? []).map((x, i): Line => {
+            const lot = d.lots.find((l) => l.id === x.lotId);
+            return { key: `gp-${i}`, raw: lot?.lotNo ?? "", productId: x.productId, lotId: x.lotId, lotNo: lot?.lotNo, qty: x.qty, checked: true, source: "MANUAL" };
+          }),
+        );
+        if (!out.length) out.push(target);
+      }
+      const h = matchHospital(d, ex.hospitalName);
+      if (h && !draft.hospitalId) setHospitalId(h.id);
+      setHospitalRead(ex.hospitalName);
+      if (ex.date && !draft.hospitalId) setCaseDate(ex.date);
+      setEngine(legacy.length && ex.engine === "none" ? "sample" : ex.engine);
+      setModel(ex.model);
+      setGroups(out);
+      await new Promise((r) => setTimeout(r, 500));
+      if (alive) setPhase(3);
+    })();
+    return () => {
+      alive = false;
+      clearTimeout(t1);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!draft)
+    return (
+      <MScreen title={t("m.ocr.title")} back="/m/cases/new" tabs={false}>
+        <EmptyState
+          icon={<Sparkles className="h-6 w-6" />}
+          title={t("m.ocr.noDraft")}
+          action={
+            <Link href="/m/cases/new">
+              <Button>{t("m.new.title")}</Button>
+            </Link>
+          }
+        />
+      </MScreen>
+    );
+
+  const hospital = d.hospitals.find((h) => h.id === hospitalId);
+  const itemCount = groups.reduce((a, g) => a + g.lines.length, 0);
+  const selectedCount = groups.reduce((a, g) => a + g.lines.filter((l) => l.checked && l.productId && l.qty > 0).length, 0);
+  const doctors = d.doctors.filter((x) => !hospitalId || x.hospitalIds.includes(hospitalId));
+
+  const patch = (gk: string, f: (g: Group) => Group) => setGroups((gs) => gs.map((g) => (g.key === gk ? f(g) : g)));
+  const patchLine = (gk: string, lk: string, f: (l: Line) => Line) => patch(gk, (g) => ({ ...g, lines: g.lines.map((l) => (l.key === lk ? f(l) : l)) }));
+
+  const addTo = (gk: string, line: Line) => {
+    patch(gk, (g) => ({ ...g, lines: [...g.lines, line] }));
+    setAdding(null);
+  };
+
+  const confirm = () => {
+    if (!hospitalId) return toast.warning(t("m.ocr.needHospital"));
+    const ready = groups.filter((g) => g.lines.some((l) => l.checked && l.productId && l.qty > 0));
+    if (!ready.length) return toast.warning(t("m.ocr.needItem"));
+    setSaving(true);
+    const created = ready.map((g) => {
+      const items = g.lines.filter((l) => l.checked && l.productId && l.qty > 0);
+      const ep = items.some((l) => d.products.find((p) => p.id === l.productId)?.category === "Electrophysiology");
+      return run(ops.createCase, {
+        hospitalId,
+        caseDate,
+        doctorId: g.doctorId || undefined,
+        patientHn: g.hn || undefined,
+        patientAn: g.an || undefined,
+        procedure: draft.procedure || (ep ? "ep" : undefined),
+        photos: draft.photos,
+        items: items.map((l) => ({ productId: l.productId!, qty: l.qty, lotId: l.lotId, source: l.source, serialNo: l.serialNo })),
+      });
+    });
+    setDraft(undefined);
+    if (created.length === 1) {
+      toast.success(t("m.ocr.created", { no: created[0].no }), t("m.ocr.createdDesc", { n: selectedCount }));
+      router.replace(`/m/cases/${created[0].id}?created=1`);
+    } else {
+      toast.success(t("m.ocr.createdN", { n: created.length, nos: created.map((c) => c.no).join(", ") }), t("m.ocr.createdDesc", { n: selectedCount }));
+      router.replace(`/m/cases`);
+    }
+  };
+
+  const engineLabel =
+    engine === "ai" ? t("m.ocr.engine.ai", { model: model ?? "Claude" }) : engine === "barcode" ? t("m.ocr.engine.barcode") : engine === "sample" ? t("m.ocr.engine.sample") : "";
+
+  return (
+    <MScreen
+      title={t("m.ocr.title")}
+      back="/m/cases/new"
+      tabs={false}
+      footer={
+        phase === 3 &&
+        itemCount > 0 && (
+          <Button size="lg" className="w-full" onClick={confirm} loading={saving}>
+            {t("g.confirm")} · {groups.length > 1 ? `${groups.length} ${t("g.cases")} · ` : ""}
+            {selectedCount} {t("g.items")}
+          </Button>
+        )
+      }
+    >
+      <div className="space-y-4 p-4">
+        <div className="relative overflow-hidden rounded-2xl bg-slate-200">
+          <div className="flex gap-1">
+            {draft.photos.slice(0, 2).map((p) => (
+              <PhotoThumb key={p.id} url={p.url} className="h-36 flex-1 rounded-none" />
+            ))}
+            {!draft.photos.length && <div className="grid h-24 flex-1 place-items-center text-slate-500"><ScanLine className="h-8 w-8" /></div>}
+          </div>
+          {phase < 3 && (
+            <div className="absolute inset-0 overflow-hidden bg-navy-900/40">
+              <div className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
+              <div className="absolute inset-x-0 h-0.5 bg-sky-300 shadow-[0_0_14px_#7dd3fc] animate-scanline" style={{ top: "50%" }} />
+            </div>
+          )}
+        </div>
+
+        {phase < 3 ? (
+          <div className="rounded-2xl bg-white p-5 shadow-card">
+            <div className="flex items-center gap-2 text-brand-700">
+              <Sparkles className="h-5 w-5 animate-pulse" />
+              <p className="font-semibold">{t("m.ocr.processing")}</p>
+            </div>
+            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-full rounded-full bg-brand-600 transition-all duration-500" style={{ width: `${((phase + 1) / 3) * 100}%` }} />
+            </div>
+            <ul className="mt-4 space-y-2">
+              {STEPS.map((s, i) => (
+                <li key={s} className={cx("flex items-center gap-2 text-sm", i <= phase ? "text-slate-700" : "text-slate-300")}>
+                  {i < phase ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <span className={cx("h-4 w-4 rounded-full border-2", i === phase ? "border-brand-500 border-t-transparent animate-spin" : "border-slate-200")} />}
+                  {t(s)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : itemCount === 0 ? (
+          <div className="rounded-2xl bg-amber-50 p-4 ring-1 ring-amber-200">
+            <p className="flex items-center gap-2 font-semibold text-amber-800">
+              <AlertTriangle className="h-5 w-5" /> {t("m.ocr.none")}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-amber-800/90">{t("m.ocr.noneDesc")}</p>
+            <Link href="/m/cases/new">
+              <Button variant="outline" className="mt-3 w-full">
+                <ScanLine className="h-4 w-4" /> {t("m.new.scanLive")}
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-start gap-2.5 rounded-2xl bg-emerald-50 p-3 ring-1 ring-emerald-100">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+              <div>
+                <p className="text-sm font-semibold text-emerald-800">{t("m.ocr.patients", { p: groups.length, n: itemCount })}</p>
+                <p className="text-xs text-emerald-700/80">{engineLabel}</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 rounded-2xl bg-white p-3 shadow-card">
+              <Field label={t("g.hospital")} required hint={hospitalRead ? `${t("m.ocr.readFrom")}: “${hospitalRead}”` : undefined}>
+                <Select value={hospitalId} onChange={(e) => setHospitalId(e.target.value)}>
+                  <option value="">{t("g.pleaseSelect")}</option>
+                  {d.hospitals.map((h) => (
+                    <option key={h.id} value={h.id}>
+                      {name(h, lang)}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label={t("m.new.caseDate")} required>
+                <Input type="date" value={caseDate} onChange={(e) => setCaseDate(e.target.value)} />
+              </Field>
+            </div>
+
+            {groups.map((g, gi) => (
+              <section key={g.key} className="overflow-hidden rounded-2xl bg-white shadow-card">
+                <header className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-3 py-2">
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-600 text-white">
+                    <UserRound className="h-4 w-4" />
+                  </span>
+                  <p className="flex-1 text-sm font-semibold text-slate-800">{t("m.ocr.patientN", { n: gi + 1 })}</p>
+                  <Badge tone="blue">{g.lines.filter((l) => l.checked && l.productId).length}</Badge>
+                </header>
+                <div className="grid grid-cols-2 gap-2 px-3 pt-3">
+                  <Field label="HN">
+                    <Input value={g.hn} onChange={(e) => patch(g.key, (x) => ({ ...x, hn: e.target.value }))} placeholder="HN" />
+                  </Field>
+                  <Field label="AN">
+                    <Input value={g.an} onChange={(e) => patch(g.key, (x) => ({ ...x, an: e.target.value }))} placeholder="AN" />
+                  </Field>
+                  <div className="col-span-2">
+                    <Field label={t("g.doctor")}>
+                      <Select value={g.doctorId} onChange={(e) => patch(g.key, (x) => ({ ...x, doctorId: e.target.value }))}>
+                        <option value="">{t("g.pleaseSelect")}</option>
+                        {doctors.map((x) => (
+                          <option key={x.id} value={x.id}>
+                            {x.code ? `${x.code} · ` : ""}
+                            {name(x, lang)}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                  </div>
+                </div>
+                <ul className="mt-2 divide-y divide-slate-100">
+                  {g.lines.map((l) => {
+                    const p = d.products.find((x) => x.id === l.productId);
+                    const lot = d.lots.find((x) => x.id === l.lotId);
+                    const low = (l.confidence ?? 1) < 0.9;
+                    return (
+                      <li key={l.key} className={cx("flex items-center gap-3 px-3 py-2.5", !l.checked && "opacity-50")}>
+                        <input
+                          type="checkbox"
+                          checked={l.checked}
+                          disabled={!p}
+                          onChange={(e) => patchLine(g.key, l.key, (x) => ({ ...x, checked: e.target.checked }))}
+                          className="h-5 w-5 shrink-0 rounded border-slate-300 accent-brand-600"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className={cx("truncate text-sm font-semibold", p ? "text-slate-800" : "text-rose-600")}>{p ? p.name : t("m.ocr.unknownRef")}</p>
+                          <p className="truncate font-mono text-[11px] text-slate-500">
+                            REF {p?.ref ?? parseSticker(l.raw)?.ref ?? l.raw}
+                            {(lot?.lotNo ?? l.lotNo) && ` · LOT ${lot?.lotNo ?? l.lotNo}`}
+                            {l.serialNo && ` · SN ${l.serialNo}`}
+                          </p>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[10px] font-medium">
+                            {l.source === "OCR" && l.confidence !== undefined && (
+                              <span className={low ? "text-amber-600" : "text-emerald-600"}>
+                                {engine === "barcode" ? "BARCODE" : "AI"} {Math.round(l.confidence * 100)}%{low && ` · ${t("m.ocr.lowConf")}`}
+                              </span>
+                            )}
+                            {l.source !== "OCR" && <span className="text-brand-600">{t(`src.${l.source}`)}</span>}
+                            {p && l.lotNo && !lot && <span className="text-amber-600">{t("m.ocr.unknownLot")}</span>}
+                          </div>
+                        </div>
+                        <span className="w-6 text-center text-sm font-semibold tabular-nums text-slate-700">×{l.qty}</span>
+                        <button
+                          onClick={() => patch(g.key, (x) => ({ ...x, lines: x.lines.filter((y) => y.key !== l.key) }))}
+                          className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-500"
+                          aria-label="remove"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div className="p-3 pt-1">
+                  <Button variant="ghost" size="sm" className="w-full" onClick={() => setAdding(g.key)}>
+                    <Plus className="h-4 w-4" /> {t("m.ocr.addTo")}
+                  </Button>
+                </div>
+              </section>
+            ))}
+            {hospital && <p className="text-center text-[11px] text-slate-400">{name(hospital, lang)}</p>}
+          </>
+        )}
+      </div>
+
+      <AddItemModal open={!!adding} onClose={() => setAdding(null)} onAdd={(line) => adding && addTo(adding, line)} />
+    </MScreen>
+  );
+}
+
+function AddItemModal({ open, onClose, onAdd }: { open: boolean; onClose: () => void; onAdd: (line: Line) => void }) {
+  const { t } = useT();
+  const d = useData();
+  const [tab, setTab] = useState<"scan" | "search">("scan");
+  const [q, setQ] = useState("");
+  const list = d.products.filter((p) => p.category !== "Pharmaceutical" && `${p.name} ${p.ref}`.toLowerCase().includes(q.toLowerCase()));
+  return (
+    <Modal open={open} onClose={onClose} title={t("g.addItem")}>
+      <Tabs
+        variant="pill"
+        className="mb-3 w-full [&>button]:flex-1"
+        value={tab}
+        onChange={setTab}
+        tabs={[
+          { id: "scan", label: <span className="inline-flex items-center gap-1"><ScanLine className="h-3.5 w-3.5" />{t("m.tab.scan")}</span> },
+          { id: "search", label: <span className="inline-flex items-center gap-1"><Search className="h-3.5 w-3.5" />{t("g.search")}</span> },
+        ]}
+      />
+      {tab === "search" ? (
+        <div className="space-y-2">
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("m.scan.searchPh")} autoFocus />
+          {list.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => onAdd({ key: ops.uid("ln"), raw: p.ref, productId: p.id, qty: 1, checked: true, source: "MANUAL" })}
+              className="flex w-full items-center gap-3 rounded-xl border border-slate-100 p-2 text-left hover:bg-slate-50"
+            >
+              <ProductArt category={p.category} className="h-9 w-9" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{p.name}</p>
+                <p className="text-[11px] text-slate-500">REF {p.ref}</p>
+              </div>
+              <Plus className="h-4 w-4 text-brand-600" />
+            </button>
+          ))}
+          {list.length === 0 && <EmptyState title={t("g.noResults")} />}
+        </div>
+      ) : (
+        <ScannerView
+          compact
+          samples={stickerSamples()}
+          onResult={(code) => {
+            const line = toLine(d, { raw: code }, "SCAN", ops.uid("ln"));
+            if (!line.productId) return toast.error(t("scan.notFound"), code);
+            toast.success(t("scan.found"), d.products.find((p) => p.id === line.productId)?.name);
+            onAdd(line);
+          }}
+        />
+      )}
+    </Modal>
+  );
+}

@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ConsignCare Project Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: 1280×720 slides on a navy stage, scaled to fit; one slide at a time on wide screens, all stacked on phones.
+   Look: the paperwork of hospital consignment — white document stock, navy ink, the amber of a "waiting PO" sticker. */
+:root {
+  --stage: #0b1730;
+  --paper: #fbfcfe;
+  --paper-2: #eef2f8;
+  --ink: #12224a;
+  --ink-2: #33415f;
+  --muted: #66728c;
+  --line: #d6dce8;
+  --brand: #2554e0;
+  --brand-soft: #e3eafc;
+  --signal: #f0a417;
+  --signal-soft: #fdf1d6;
+  --ok: #15946a;
+  --ok-soft: #dcf3ea;
+  --risk: #c23b3b;
+  --on-dark: #e8eefb;
+  --on-dark-2: #9fb0d3;
+  --f-display: "Bai Jamjuree", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+html, body { height: 100%; }
+body { margin: 0; background: var(--stage); color: var(--ink); font-family: var(--f-body); -webkit-font-smoothing: antialiased; }
+
+/* ---------- stage & navigation ---------- */
+.deck { position: relative; height: 100%; display: grid; place-items: center; overflow: hidden; padding-inline: 16px; box-sizing: border-box; }
+.frame { position: relative; width: 1280px; height: 720px; transform-origin: center center; flex: none; }
+.slide { position: absolute; inset: 0; background: var(--paper); border-radius: 10px; overflow: hidden; box-shadow: 0 30px 80px rgb(0 0 0 / .35); display: none; }
+.slide.on { display: block; animation: rise .35s ease-out; }
+@keyframes rise { from { opacity: .4; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .slide.on { animation: none; } }
+
+.bar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 12px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); color: var(--on-dark-2); font: 500 13px/1 var(--f-mono); }
+.bar button { appearance: none; border: 1px solid rgb(255 255 255 / .18); background: transparent; color: var(--on-dark); width: 36px; height: 32px; border-radius: 8px; cursor: pointer; font: inherit; font-size: 15px; }
+.bar button:hover { background: rgb(255 255 255 / .08); }
+.bar button:focus-visible, .dots button:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.dots { display: flex; gap: 5px; flex: 1; justify-content: center; flex-wrap: wrap; }
+.dots button { width: 22px; height: 6px; border: 0; padding: 0; border-radius: 3px; background: rgb(255 255 255 / .18); cursor: pointer; }
+.dots button[aria-current="true"] { background: var(--signal); }
+.count { min-width: 64px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* phones: every slide in a column, each scaled to the width */
+@media (max-width: 760px) {
+  .deck { display: block; height: auto; overflow: visible; padding-block: 16px 72px; }
+  .slot { position: relative; width: 100%; margin-bottom: 14px; }
+  .slot .frame { position: absolute; left: 0; top: 0; transform-origin: top left; }
+  .slide { display: block; position: relative; height: 720px; }
+  .slide.on { animation: none; }
+  .bar { display: none; }
+}
+
+/* ---------- slide furniture ---------- */
+.pad { position: absolute; inset: 0; padding: 56px 72px 48px; display: flex; flex-direction: column; gap: 22px; box-sizing: border-box; }
+.eyebrow { font: 600 13px/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--brand); display: flex; gap: 12px; align-items: center; }
+.eyebrow .th { font-family: var(--f-body); letter-spacing: 0; text-transform: none; color: var(--muted); font-weight: 500; }
+h1, h2, h3 { font-family: var(--f-display); margin: 0; text-wrap: balance; color: var(--ink); }
+h2 { font-size: 44px; line-height: 1.08; font-weight: 700; letter-spacing: -.01em; max-width: 30ch; }
+h3 { font-size: 21px; line-height: 1.2; font-weight: 600; }
+p { margin: 0; line-height: 1.55; color: var(--ink-2); }
+.lede { font-size: 20px; max-width: 58ch; }
+.small { font-size: 14px; color: var(--muted); }
+.mono { font-family: var(--f-mono); }
+.foot { position: absolute; left: 72px; right: 72px; bottom: 22px; display: flex; justify-content: space-between; font: 500 11px/1 var(--f-mono); color: var(--muted); letter-spacing: .06em; }
+.row { display: flex; gap: 28px; min-height: 0; }
+.grow { flex: 1; min-width: 0; }
+.tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font: 600 12px/1.2 var(--f-body); background: var(--brand-soft); color: var(--brand); white-space: nowrap; }
+.tag.amber { background: var(--signal-soft); color: #8a5a00; }
+.tag.green { background: var(--ok-soft); color: var(--ok); }
+
+.phone { border-radius: 26px; box-shadow: 0 18px 40px rgb(18 34 74 / .22); display: block; height: 100%; width: auto; }
+.shot { border-radius: 10px; border: 1px solid var(--line); box-shadow: 0 14px 40px rgb(18 34 74 / .14); display: block; max-width: 100%; }
+.cap { font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+.cap b { color: var(--ink); font-weight: 600; display: block; font-size: 15px; margin-bottom: 2px; }
+
+/* ---------- 1 · title ---------- */
+.s-title { background: var(--ink); }
+.s-title .pad { padding: 72px; justify-content: space-between; }
+.s-title .brand { display: flex; align-items: center; gap: 14px; color: var(--on-dark); font: 700 22px/1 var(--f-display); }
+.s-title .mark { width: 44px; height: 44px; border-radius: 12px; background: var(--brand); display: grid; place-items: center; }
+.s-title h1 { color: #fff; font-size: 76px; line-height: 1.02; font-weight: 700; letter-spacing: -.02em; max-width: 13ch; }
+.s-title h1 em { font-style: normal; color: var(--signal); }
+.s-title .sub { color: var(--on-dark-2); font-size: 21px; max-width: 40ch; margin-top: 22px; }
+.s-title .meta { display: flex; gap: 28px; color: var(--on-dark-2); font: 500 13px/1.5 var(--f-mono); }
+.s-title .meta b { display: block; color: var(--on-dark); font-weight: 600; }
+.s-title .art { position: absolute; right: 72px; top: 60px; bottom: 60px; display: flex; gap: 18px; align-items: center; }
+.s-title .art img { height: 560px; border-radius: 30px; box-shadow: 0 30px 70px rgb(0 0 0 / .45); }
+.s-title .art img + img { height: 470px; opacity: .9; }
+
+/* ---------- journey today ---------- */
+.journey { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: auto; margin-bottom: 30px; }
+.step { border-top: 3px solid var(--line); padding-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.step .n { font: 600 12px/1 var(--f-mono); color: var(--muted); }
+.step h4 { margin: 0; font: 600 16px/1.25 var(--f-display); color: var(--ink); }
+.step .via { font: 500 12px/1 var(--f-mono); color: var(--brand); }
+.step .pain { font-size: 13px; line-height: 1.45; color: var(--risk); }
+.step.bad { border-top-color: var(--risk); }
+.mood { height: 120px; margin-top: 8px; }
+.mood text { font: 500 11px var(--f-mono); fill: var(--muted); }
+
+/* ---------- measures ---------- */
+table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
+.measures th { text-align: left; font: 600 12px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 0 12px 12px 0; border-bottom: 2px solid var(--ink); }
+.measures td { padding: 15px 12px 15px 0; border-bottom: 1px solid var(--line); vertical-align: middle; color: var(--ink-2); }
+.measures td.pain { color: var(--ink); font-weight: 600; width: 34%; }
+.measures .num { font: 600 22px/1 var(--f-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.measures .before { color: var(--risk); }
+.measures .target { color: var(--ok); }
+.measures .arrow { color: var(--muted); font-family: var(--f-mono); padding-right: 12px; }
+
+/* ---------- roles ---------- */
+.doors { display: grid; grid-template-columns: 1fr 1.25fr 0.9fr; gap: 22px; flex: 1; min-height: 0; }
+.door { border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: #fff; }
+.door.ext { background: var(--paper-2); border-style: dashed; }
+.door .kind { font: 600 12px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.door ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
+.door li { font-size: 14.5px; line-height: 1.4; color: var(--ink-2); }
+.door li b { color: var(--ink); font-weight: 600; display: block; font-size: 15.5px; }
+
+/* ---------- lifecycle ---------- */
+.life { display: grid; grid-template-columns: repeat(8, 1fr); gap: 0; margin-top: 10px; }
+.state { position: relative; padding: 0 8px 0 0; display: flex; flex-direction: column; gap: 10px; }
+.state .dot { width: 22px; height: 22px; border-radius: 50%; background: var(--brand); border: 4px solid var(--brand-soft); box-sizing: content-box; position: relative; z-index: 1; }
+.state::before { content: ""; position: absolute; top: 13px; left: 0; right: 0; height: 2px; background: var(--line); }
+.state:first-child::before { left: 14px; }
+.state:last-child::before { right: auto; width: 14px; }
+.state.wait .dot { background: var(--signal); border-color: var(--signal-soft); }
+.state.done .dot { background: var(--ok); border-color: var(--ok-soft); }
+.state code { font: 600 12px/1.2 var(--f-mono); color: var(--ink); word-break: break-all; }
+.state .th { font: 600 15px/1.25 var(--f-body); color: var(--ink); }
+.state .who { font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+.docs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+.docs-k { font: 600 12px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: auto; }
+.doc { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 5px; position: relative; }
+.doc::after { content: ""; position: absolute; right: 0; top: 0; border-width: 0 16px 16px 0; border-style: solid; border-color: var(--paper) var(--paper) var(--line) var(--line); }
+.doc .no { font: 600 13px/1 var(--f-mono); color: var(--brand); }
+.doc .t { font: 600 16px/1.2 var(--f-body); color: var(--ink); }
+.doc .e { font-size: 12.5px; color: var(--muted); }
+
+/* ---------- capture ---------- */
+.s-capture .row { flex: 1; }
+.sheetwrap { width: 360px; flex: none; position: relative; }
+.sheetwrap img { width: 100%; height: 560px; object-fit: cover; object-position: top; border-radius: 6px; box-shadow: 0 14px 40px rgb(18 34 74 / .2); }
+.sticker { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+.bars { height: 46px; background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px, var(--ink) 8px 11px, transparent 11px 12px); border-radius: 2px; }
+.parts { display: grid; grid-template-columns: 1.1fr 1fr 0.9fr; gap: 10px; }
+.part { display: flex; flex-direction: column; gap: 4px; }
+.part .v { font: 600 21px/1 var(--f-mono); color: var(--ink); padding-bottom: 8px; border-bottom: 3px solid var(--brand); }
+.part:nth-child(2) .v { border-color: var(--signal); }
+.part:nth-child(3) .v { border-color: var(--ok); }
+.part .k { font: 600 12px/1 var(--f-mono); letter-spacing: .1em; color: var(--muted); }
+.ladder { display: flex; flex-direction: column; gap: 10px; }
+.rung { display: grid; grid-template-columns: 32px 1fr; gap: 12px; align-items: start; }
+.rung .i { width: 32px; height: 32px; border-radius: 8px; background: var(--brand-soft); color: var(--brand); display: grid; place-items: center; font: 700 14px/1 var(--f-mono); }
+.rung p { font-size: 15px; }
+.rung b { color: var(--ink); }
+
+/* ---------- screens ---------- */
+.screens { display: flex; gap: 34px; flex: 1; min-height: 0; align-items: stretch; }
+.screen { display: flex; flex-direction: column; gap: 14px; flex: 1; min-width: 0; align-items: flex-start; }
+.screen .ph { flex: 1; min-height: 0; }
+.screen .cap { max-width: 30ch; }
+.wide { display: flex; gap: 30px; flex: 1; min-height: 0; align-items: flex-start; }
+.wide .shotbox { flex: 1.9; min-width: 0; }
+.wide .shotbox img { width: 100%; }
+.wide .side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+.points { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.points li { font-size: 15px; line-height: 1.5; color: var(--ink-2); padding-left: 18px; position: relative; }
+.points li::before { content: ""; position: absolute; left: 0; top: .62em; width: 8px; height: 2px; background: var(--brand); }
+.points b { color: var(--ink); }
+
+/* ---------- truss ---------- */
+.counts { margin-top: 10px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; border-top: 2px solid var(--ink); }
+.cnt { padding: 16px 14px 18px 0; border-bottom: 1px solid var(--line); }
+.cnt .v { font: 700 40px/1 var(--f-display); color: var(--ink); font-variant-numeric: tabular-nums; }
+.cnt .k { font-size: 13.5px; color: var(--muted); margin-top: 6px; line-height: 1.35; }
+.stages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.stage { display: flex; flex-direction: column; gap: 6px; }
+.stage .k { font: 600 12px/1 var(--f-mono); color: var(--brand); letter-spacing: .08em; }
+.stage p { font-size: 14px; }
+.files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; margin-bottom: 30px; }
+.file { font: 500 12.5px/1 var(--f-mono); padding: 7px 10px; border-radius: 6px; background: var(--paper-2); color: var(--ink-2); border: 1px solid var(--line); }
+
+/* ---------- stack ---------- */
+.stack { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 26px; }
+.layer { display: flex; flex-direction: column; gap: 8px; border-top: 2px solid var(--ink); padding-top: 12px; }
+.layer .k { font: 600 12px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.layer ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.layer li { font-size: 15px; color: var(--ink); line-height: 1.35; }
+.layer li span { color: var(--muted); font-size: 13px; }
+
+/* ---------- prototype & next ---------- */
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; flex: 1; min-height: 0; }
+.ledger { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.ledger td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-2); line-height: 1.4; }
+.ledger td:first-child { width: 92px; }
+.next { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 30px; }
+.item { display: grid; grid-template-columns: 40px 1fr; gap: 14px; padding: 16px 0; border-top: 1px solid var(--line); }
+.item .w { font: 700 15px/1 var(--f-mono); color: var(--signal); padding-top: 3px; }
+.item h3 { font-size: 19px; margin-bottom: 6px; }
+.item p { font-size: 14.5px; }
+.s-end { background: var(--ink); }
+.s-end h2 { color: #fff; }
+.s-end p { color: var(--on-dark-2); }
+.s-end .foot { color: var(--on-dark-2); }
+.s-end .eyebrow { color: var(--signal); }
+.s-end .item { border-top-color: rgb(255 255 255 / .14); }
+.s-end .item h3 { color: #fff; }
+</style>
+</head>
+<body>
+
+<main class="deck" id="deck" aria-label="ConsignCare presentation">
+
+<!-- 1 -->
+<section class="slide s-title" id="s1" aria-label="Title">
+  <div class="pad">
+    <div class="brand"><span class="mark"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>ConsignCare</div>
+    <div>
+      <h1>From case to billing, <em>all in one place.</em></h1>
+      <p class="sub">Consignment case tracking and procurement for a Thai medical‑device distributor. One team, one platform, from the operating room to the paid invoice.</p>
+    </div>
+    <div class="meta">
+      <div><b>Business + system design</b>modelled in Truss</div>
+      <div><b>Clickable prototype</b>Next.js · TH / EN</div>
+      <div><b>17 Oct 2026</b>v0.1.0</div>
+    </div>
+  </div>
+  <div class="art" aria-hidden="true">
+    <img src="img/m-new.jpg" alt="">
+    <img src="img/m-case.jpg" alt="">
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide" id="s2" aria-label="A consignment case today">
+  <div class="pad">
+    <div class="eyebrow">The problem <span class="th">เคสฝากขายวันนี้</span></div>
+    <h2>Today a case lives in a LINE photo, an Excel sheet and somebody's memory.</h2>
+    <p class="lede">The hospital pays only for what is used in surgery. Between the operating room and the payment, the same items are typed three times and the PO is chased by phone.</p>
+    <div class="journey">
+      <div class="step"><span class="n">1</span><h4>Surgery uses items</h4><span class="via">OR shelf</span></div>
+      <div class="step bad"><span class="n">2</span><h4>Photo of the usage sheet</h4><span class="via">LINE</span><span class="pain">The photo is the only record. Handwriting is hard to read.</span></div>
+      <div class="step bad"><span class="n">3</span><h4>Re‑typed at night</h4><span class="via">Excel</span><span class="pain">15 minutes a case, with errors in lot numbers.</span></div>
+      <div class="step bad"><span class="n">4</span><h4>Quotation</h4><span class="via">LINE / email</span><span class="pain">Admin types it again, sometimes from the wrong price list.</span></div>
+      <div class="step bad"><span class="n">5</span><h4>Chase the PO</h4><span class="via">Phone</span><span class="pain">The PO arrives weeks later. Nobody knows which case it is for.</span></div>
+      <div class="step bad"><span class="n">6</span><h4>Refill the shelf</h4><span class="via">Paper</span><span class="pain">Warehouse can't see what was used or what is expiring.</span></div>
+      <div class="step bad"><span class="n">7</span><h4>Invoice</h4><span class="via">ERP</span><span class="pain">No list of billable cases, so some are never billed.</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>Journey "A consignment case today" · persona: sales rep</span><span>02</span></div>
+</section>
+
+<!-- 3 -->
+<section class="slide" id="s3" aria-label="What it costs">
+  <div class="pad">
+    <div class="eyebrow">Outcomes <span class="th">ตัวชี้วัด ก่อน → เป้าหมาย</span></div>
+    <h2>Five measures decide whether this works.</h2>
+    <table class="measures">
+      <thead><tr><th>Pain</th><th>Who feels it</th><th>Measure</th><th>Before</th><th></th><th>Target</th></tr></thead>
+      <tbody>
+        <tr><td class="pain">Usage typed by hand from photos and paper</td><td>Sales rep, admin</td><td>Minutes to record a case</td><td class="num before">15 min</td><td class="arrow">→</td><td class="num target">3 min</td></tr>
+        <tr><td class="pain">Cases that are never billed</td><td>Finance, management</td><td>Share of used items billed</td><td class="num before">~92%</td><td class="arrow">→</td><td class="num target">99.5%</td></tr>
+        <tr><td class="pain">Slow cash</td><td>Finance</td><td>Days from usage to invoice</td><td class="num before">21 d</td><td class="arrow">→</td><td class="num target">7 d</td></tr>
+        <tr><td class="pain">Expired stock in hospitals</td><td>Warehouse</td><td>Expired write‑off per year</td><td class="num before">3%</td><td class="arrow">→</td><td class="num target">&lt;1%</td></tr>
+        <tr><td class="pain">No visibility without phone calls</td><td>Manager</td><td>Status known per case and hospital</td><td class="num before">No</td><td class="arrow">→</td><td class="num target">Live</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="foot"><span>Stage 0 · outcomes and impact map in Truss</span><span>03</span></div>
+</section>
+
+<!-- 4 -->
+<section class="slide" id="s4" aria-label="Who uses it">
+  <div class="pad">
+    <div class="eyebrow">One platform, two front doors <span class="th">ผู้ใช้งาน</span></div>
+    <h2>The rep works from a phone in the OR. Everyone else works from the back office.</h2>
+    <div class="doors">
+      <div class="door">
+        <span class="kind">Mobile app (PWA)</span>
+        <ul>
+          <li><b>Sales representative</b>Sees only assigned hospitals. Creates a case, photographs or scans the stickers, follows the case to billing, looks up any lot.</li>
+          <li><b>Sales manager</b>Approves from anywhere: discounts over 10%, requisitions, purchase requests.</li>
+        </ul>
+      </div>
+      <div class="door">
+        <span class="kind">Back‑office web</span>
+        <ul>
+          <li><b>Sales admin</b>Quotation from the case usage, records the hospital PO, raises the requisition.</li>
+          <li><b>Warehouse</b>Receives goods with lot and expiry, refills hospital shelves, watches expiry 90 days ahead.</li>
+          <li><b>Purchasing</b>Turns approved purchase requests into supplier POs.</li>
+          <li><b>Accounting</b>Invoices against the PO, marks paid, closes the case.</li>
+          <li><b>System admin</b>Hospitals, doctors, products, contract prices, users.</li>
+        </ul>
+      </div>
+      <div class="door ext">
+        <span class="kind">Outside the company</span>
+        <ul>
+          <li><b>Hospital purchasing</b>Receives the quotation by email or LINE, replies with a PO.</li>
+          <li><b>Supplier</b>Receives the supplier PO.</li>
+          <li><b>Services</b>Claude vision, LINE Messaging, email, SSO, ERP export.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>13 actors · 18 use cases</span><span>04</span></div>
+</section>
+
+<!-- 5 -->
+<section class="slide" id="s5" aria-label="Case lifecycle">
+  <div class="pad">
+    <div class="eyebrow">Case lifecycle <span class="th">เส้นทางของเคส</span></div>
+    <h2>Every case moves through eight states, and each step leaves a document behind.</h2>
+    <div class="life">
+      <div class="state done"><span class="dot"></span><code>DRAFT</code><span class="th">สร้างเคส</span><span class="who">Rep</span></div>
+      <div class="state done"><span class="dot"></span><code>USAGE_RECORDED</code><span class="th">บันทึกการใช้</span><span class="who">Rep · stock cut at the hospital</span></div>
+      <div class="state done"><span class="dot"></span><code>QUOTED</code><span class="th">ออกใบเสนอราคา</span><span class="who">Admin · manager if discount &gt;10%</span></div>
+      <div class="state wait"><span class="dot"></span><code>WAITING_PO</code><span class="th">รอ PO</span><span class="who">Hospital · follow‑up reminders</span></div>
+      <div class="state"><span class="dot"></span><code>PO_RECEIVED</code><span class="th">ได้รับ PO</span><span class="who">Admin or rep scans the PO</span></div>
+      <div class="state"><span class="dot"></span><code>REQUISITIONED</code><span class="th">ใบเบิก</span><span class="who">Warehouse refills the shelf</span></div>
+      <div class="state"><span class="dot"></span><code>BILLED</code><span class="th">วางบิล</span><span class="who">Accounting</span></div>
+      <div class="state"><span class="dot"></span><code>CLOSED</code><span class="th">ปิดเคส</span><span class="who">Paid</span></div>
+    </div>
+    <p class="small">CANCELLED is allowed from any state before BILLED. Quotation, requisition, purchase request, invoice and usage photo each have their own state machine, six in all.</p>
+    <span class="docs-k">Documents along the way</span>
+    <div class="docs" style="margin-bottom:22px">
+      <div class="doc"><span class="no">C25001</span><span class="t">Case</span><span class="e">one per patient</span></div>
+      <div class="doc"><span class="no">QT-2026-001</span><span class="t">ใบเสนอราคา</span><span class="e">Quotation · PDF / Excel</span></div>
+      <div class="doc"><span class="no">BKH-PO-26-1007</span><span class="t">PO โรงพยาบาล</span><span class="e">Hospital PO</span></div>
+      <div class="doc"><span class="no">RQ-2026-…</span><span class="t">ใบเบิก</span><span class="e">Requisition · PDF / Excel</span></div>
+      <div class="doc"><span class="no">INV-2026-…</span><span class="t">ใบแจ้งหนี้</span><span class="e">Invoice · PDF / Excel</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>State machine: the API refuses any transition the diagram lacks</span><span>05</span></div>
+</section>
+
+<!-- 6 -->
+<section class="slide s-capture" id="s6" aria-label="Capture by photo">
+  <div class="pad">
+    <div class="eyebrow">Capture <span class="th">ถ่ายรูปใบบันทึกการใช้</span></div>
+    <div class="row">
+      <div class="sheetwrap"><img src="img/sheet.jpg" alt="A real EP usage sheet from Phayathai Sriracha with two patients and twelve equipment stickers; patient names are covered"></div>
+      <div class="grow" style="display:flex;flex-direction:column;gap:22px">
+        <h2 style="font-size:40px">One photo of the sheet becomes one case per patient.</h2>
+        <p class="lede" style="font-size:18px">The rep already photographs this sheet. Each equipment sticker prints its REF, lot and serial under the barcode, and each patient sticker heads its group. The system groups stickers under their patient and reads the hospital and date from the handwriting.</p>
+        <div class="sticker" aria-label="Sticker anatomy">
+          <div class="bars" aria-hidden="true"></div>
+          <div class="parts">
+            <div class="part"><span class="v">402570</span><span class="k">REF · product</span></div>
+            <div class="part"><span class="v">11325569</span><span class="k">LOT · expiry</span></div>
+            <div class="part"><span class="v">184796</span><span class="k">SERIAL · unit</span></div>
+          </div>
+        </div>
+        <div class="ladder">
+          <div class="rung"><span class="i">1</span><p><b>Claude vision</b> reads the printed text, patient HN / AN and doctor code.</p></div>
+          <div class="rung"><span class="i">2</span><p><b>On‑device barcodes</b> (zxing‑wasm) when AI is unavailable, split into patients by the gaps between rows.</p></div>
+          <div class="rung"><span class="i">3</span><p><b>The rep confirms</b>: uncertain items are flagged, quantities adjusted, missed items added.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Real sheet, Phayathai Sriracha · names and dates of birth covered and never stored (PDPA)</span><span>06</span></div>
+</section>
+
+<!-- 7 -->
+<section class="slide" id="s7" aria-label="Mobile: new case">
+  <div class="pad">
+    <div class="eyebrow">Mobile · new case <span class="th">สร้างเคสใหม่</span></div>
+    <div class="screens">
+      <div class="screen"><img class="phone ph" src="img/m-new.jpg" alt="New case: a photo read immediately, items grouped by patient with quantity steppers"><p class="cap"><b>Read the moment it is added</b>Camera or upload. Items appear under the photo, grouped by patient, each with − / +.</p></div>
+      <div class="screen"><img class="phone ph" src="img/m-sheet.jpg" alt="Bottom sheet listing consignment lots at the hospital with quantity steppers"><p class="cap"><b>Or pick from the shelf</b>The hospital's consignment lots, with expiry and on‑hand. Quantity is capped at what is there.</p></div>
+      <div class="screen"><img class="phone ph" src="img/m-review.jpg" alt="Review screen: two patients found, hospital matched from the handwriting"><p class="cap"><b>Confirm</b>Hospital matched from the sheet. Two patients become two cases; stock is cut at that hospital.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Target: record a case in under 3 minutes</span><span>07</span></div>
+</section>
+
+<!-- 8 -->
+<section class="slide" id="s8" aria-label="Mobile: follow the case">
+  <div class="pad">
+    <div class="eyebrow">Mobile · every day <span class="th">หน้าหลัก · เคส · สแกน</span></div>
+    <div class="screens">
+      <div class="screen"><img class="phone ph" src="img/m-home.jpg" alt="Rep dashboard"><p class="cap"><b>My day</b>Cases waiting for a PO or billing, usage this month, what changed.</p></div>
+      <div class="screen"><img class="phone ph" src="img/m-case.jpg" alt="Case C25001 timeline waiting for PO"><p class="cap"><b>The case journey</b>Each step with its document: view the quotation, upload the PO, open the requisition or the bill.</p></div>
+      <div class="screen"><img class="phone ph" src="img/m-scan.jpg" alt="Scanner and search"><p class="cap"><b>Scan or search any item</b>Camera, gallery or text. Stock, expiry, location and where each unit was used.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Thai and English · works offline with the bundled sample</span><span>08</span></div>
+</section>
+
+<!-- 9 -->
+<section class="slide" id="s9" aria-label="Back office dashboard">
+  <div class="pad">
+    <div class="eyebrow">Back office <span class="th">แดชบอร์ด</span></div>
+    <div class="wide">
+      <div class="shotbox"><img class="shot" src="img/a-dash.jpg" alt="Back-office dashboard"></div>
+      <div class="side">
+        <h2 style="font-size:34px">Status of every case without a phone call.</h2>
+        <ul class="points">
+          <li><b>Next step on every case</b>, coloured by who owes it: us, the hospital or the manager.</li>
+          <li><b>Approvals queue</b> for discounts over 10%, requisitions and purchase requests. The manager decides; the record keeps who and when.</li>
+          <li><b>Per‑hospital view</b> of usage, waiting POs and unbilled value.</li>
+          <li><b>Two tabs stay in sync</b>: a case created on the phone appears here at once.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Roles see only their hospitals and their work</span><span>09</span></div>
+</section>
+
+<!-- 10 -->
+<section class="slide" id="s10" aria-label="Documents">
+  <div class="pad">
+    <div class="eyebrow">Documents <span class="th">ใบเสนอราคา · ใบเบิก · ใบแจ้งหนี้</span></div>
+    <div class="wide">
+      <div class="shotbox"><img class="shot" src="img/a-quote.jpg" alt="Quotation QT-2026-001 rendered as an A4 document with PDF and Excel download"></div>
+      <div class="side">
+        <h2 style="font-size:34px">Typed once, sent as the hospital expects it.</h2>
+        <ul class="points">
+          <li><b>Quotation from the case usage</b> at the hospital's contract price, VAT 7%, LOT / SN on every line.</li>
+          <li><b>A4 PDF and Excel</b> for quotation, requisition and invoice. Excel keeps live formulas for totals.</li>
+          <li><b>Opens over any screen</b>, on the phone or the back office, without leaving the case.</li>
+          <li><b>Send by email or LINE</b>; the PO reply is matched back to the quotation.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Doc numbers: QT-YYYY-NNN · PO prefix per hospital (PYS, BKH …)</span><span>10</span></div>
+</section>
+
+<!-- 11 -->
+<section class="slide" id="s11" aria-label="Inventory and procurement">
+  <div class="pad">
+    <div class="eyebrow">Inventory &amp; procurement <span class="th">คลังสินค้า · ใบเบิก · ใบขอซื้อ</span></div>
+    <div class="wide">
+      <div class="shotbox"><img class="shot" src="img/a-inventory.jpg" alt="Inventory by location and lot"></div>
+      <div class="side">
+        <h2 style="font-size:34px">Every lot's location and expiry is known.</h2>
+        <ul class="points">
+          <li><b>Stock by lot and location</b>: warehouse and each hospital's consignment shelf.</li>
+          <li><b>Usage cuts hospital stock</b>; the requisition refills it from the warehouse.</li>
+          <li><b>Below reorder point</b> raises a purchase request → approval → supplier PO → goods receipt with lot and expiry.</li>
+          <li><b>Expiry watch 90 days ahead</b> so lots are rotated before they are written off.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Target: expired write‑off under 1% a year</span><span>11</span></div>
+</section>
+
+<!-- 12 -->
+<section class="slide" id="s12" aria-label="System design in Truss">
+  <div class="pad">
+    <div class="eyebrow">System design <span class="th">ออกแบบใน Truss</span></div>
+    <h2>The whole system is designed in Truss, from outcomes to the release plan.</h2>
+    <div class="counts">
+      <div class="cnt"><div class="v">13</div><div class="k">actors</div></div>
+      <div class="cnt"><div class="v">18</div><div class="k">use cases with activity flows</div></div>
+      <div class="cnt"><div class="v">24</div><div class="k">entities in the data model</div></div>
+      <div class="cnt"><div class="v">6</div><div class="k">state machines</div></div>
+      <div class="cnt"><div class="v">22</div><div class="k">screens · 12 components</div></div>
+      <div class="cnt"><div class="v">12</div><div class="k">non‑functional requirements</div></div>
+    </div>
+    <div class="stages">
+      <div class="stage"><span class="k">STAGE 0 · BUSINESS</span><p>5 outcomes, 5 personas, business canvas, journey, value proposition, SWOT / TOWS, impact map.</p></div>
+      <div class="stage"><span class="k">REQUIREMENTS</span><p>Use cases, flows, 7 swimlanes and acceptance criteria in Gherkin.</p></div>
+      <div class="stage"><span class="k">DESIGN</span><p>ER and class model, 5 sequence diagrams, architecture, 19 stack choices.</p></div>
+      <div class="stage"><span class="k">BUILD &amp; TEST</span><p>SQL schema, unit, component, API and page‑transition tests, release plan.</p></div>
+    </div>
+    <div class="files">
+      <span class="file">specification.pdf</span><span class="file">specification-landscape.pdf</span><span class="file">overview.pdf</span><span class="file">test-cases.xlsx</span><span class="file">consigncare.truss.zip</span><span class="file">schema.sql</span><span class="file">acceptance.feature</span><span class="file">+ 44 Mermaid diagrams</span>
+    </div>
+  </div>
+  <div class="foot"><span>Lint: 0 conflicts · 12 advisories · exports in exports/truss</span><span>12</span></div>
+</section>
+
+<!-- 13 -->
+<section class="slide" id="s13" aria-label="Architecture">
+  <div class="pad">
+    <div class="eyebrow">Target architecture <span class="th">สถาปัตยกรรม</span></div>
+    <h2>A plain TypeScript stack, hosted in Thailand.</h2>
+    <div class="stack">
+      <div class="layer"><span class="k">Apps</span><ul><li>Next.js <span>· mobile PWA + back office</span></li><li>Tailwind CSS + shadcn/ui</li><li>ZXing / zxing‑wasm <span>· scanning on the device</span></li></ul></div>
+      <div class="layer"><span class="k">API &amp; jobs</span><ul><li>NestJS <span>· state machines, repositories</span></li><li>BullMQ on Redis <span>· queue, schedules</span></li><li>Outbox <span>· send exactly what was committed</span></li></ul></div>
+      <div class="layer"><span class="k">Data</span><ul><li>PostgreSQL + Prisma</li><li>Amazon S3 <span>· photos, documents</span></li><li>Audit trail on every decision</li></ul></div>
+      <div class="layer"><span class="k">Intelligence</span><ul><li>Claude vision <span>· claude‑opus‑5‑5, structured output</span></li><li>Barcode fallback, then manual</li></ul></div>
+      <div class="layer"><span class="k">Documents &amp; messages</span><ul><li>Playwright Chromium + exceljs <span>· PDF, Excel</span></li><li>LINE Messaging API + Amazon SES</li></ul></div>
+      <div class="layer"><span class="k">Platform</span><ul><li>AWS ECS Fargate <span>· ap‑southeast‑7 (Bangkok)</span></li><li>Auth.js with Entra ID / Google</li><li>OpenTelemetry, Grafana, Sentry · GitHub Actions</li></ul></div>
+    </div>
+  </div>
+  <div class="foot"><span>Patterns: state machine · repository · adapter · outbox · strategy</span><span>13</span></div>
+</section>
+
+<!-- 14 -->
+<section class="slide" id="s14" aria-label="The prototype">
+  <div class="pad">
+    <div class="eyebrow">The prototype <span class="th">ต้นแบบที่คลิกได้</span></div>
+    <div class="two">
+      <div style="display:flex;flex-direction:column;gap:18px;min-width:0">
+        <h2 style="font-size:36px">Click through the whole case, on any laptop, with no server.</h2>
+        <table class="ledger">
+          <tr><td><span class="tag green">Real</span></td><td>Barcode decoding on the device, PDF and Excel files, both apps, approvals, stock movements, TH / EN.</td></tr>
+          <tr><td><span class="tag">Ready</span></td><td>Claude vision reading; it switches on when an API key is set on the server.</td></tr>
+          <tr><td><span class="tag amber">Simulated</span></td><td>Email, LINE, SSO and the hospital's PO reply. EP product names and prices are placeholders.</td></tr>
+          <tr><td><span class="tag">Data</span></td><td>The browser's localStorage is the database: one key per table, backup, restore and reset in the back office.</td></tr>
+        </table>
+        <p class="small">Open the phone app and the back office in two tabs; a case confirmed on the phone appears in the back office at once.</p>
+      </div>
+      <div style="min-width:0;overflow:hidden;border-radius:10px;align-self:start"><img class="shot" src="img/a-db.jpg" alt="Local database page listing tables with rows and sizes"></div>
+    </div>
+  </div>
+  <div class="foot"><span>prototype/ · DEMO.md has the click‑by‑click story</span><span>14</span></div>
+</section>
+
+<!-- 15 -->
+<section class="slide s-end" id="s15" aria-label="Next steps">
+  <div class="pad">
+    <div class="eyebrow">Next steps</div>
+    <h2>What we need to move from prototype to pilot.</h2>
+    <div class="next">
+      <div class="item"><span class="w">01</span><div><h3>Real EP catalogue</h3><p>Product names, contract prices and reorder points for the Phayathai Sriracha EP items.</p></div></div>
+      <div class="item"><span class="w">02</span><div><h3>Switch on AI reading</h3><p>Set the API key and measure accuracy on a month of real sheets against the 3‑minute target.</p></div></div>
+      <div class="item"><span class="w">03</span><div><h3>PDPA sign‑off</h3><p>Confirm that HN / AN only are kept, names and birth dates never stored, and photos retained for the agreed period.</p></div></div>
+      <div class="item"><span class="w">04</span><div><h3>Pilot one hospital</h3><p>One hospital, two reps, one admin for four weeks; track billed share and usage‑to‑invoice days.</p></div></div>
+    </div>
+  </div>
+  <div class="foot"><span>ConsignCare · From case to billing, all in one place</span><span>15</span></div>
+</section>
+
+</main>
+
+<nav class="bar" aria-label="Slides">
+  <button type="button" id="prev" aria-label="Previous slide">←</button>
+  <div class="dots" id="dots"></div>
+  <span class="count" id="count">1 / 15</span>
+  <button type="button" id="next" aria-label="Next slide">→</button>
+</nav>
+
+<script>
+(() => {
+  const deck = document.getElementById("deck");
+  const slides = [...deck.querySelectorAll(".slide")];
+  const dots = document.getElementById("dots");
+  const count = document.getElementById("count");
+  const W = 1280, H = 720;
+  const narrow = matchMedia("(max-width: 760px)");
+
+  // each slide sits in its own 1280×720 frame; on phones each frame gets a slot that reserves its scaled height
+  const frames = slides.map((s) => {
+    const slot = document.createElement("div"); slot.className = "slot";
+    const f = document.createElement("div"); f.className = "frame";
+    s.before(slot); slot.append(f); f.append(s);
+    return { slot, f };
+  });
+
+  let i = 0;
+  const fromHash = () => { const m = /^#s(\d+)$/.exec(location.hash); return m ? Math.min(slides.length, Math.max(1, +m[1])) - 1 : 0; };
+
+  slides.forEach((s, k) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.setAttribute("aria-label", `Slide ${k + 1}: ${s.getAttribute("aria-label")}`);
+    b.addEventListener("click", () => go(k));
+    dots.append(b);
+  });
+
+  function fit() {
+    if (narrow.matches) {
+      for (const { slot, f } of frames) {
+        const sc = slot.clientWidth / W;
+        f.style.transform = `scale(${sc})`;
+        slot.style.height = `${H * sc}px`;
+        slot.hidden = false;
+      }
+      return;
+    }
+    const sc = Math.min((innerWidth - 32) / W, (innerHeight - 64) / H);
+    frames.forEach(({ slot, f }, k) => {
+      slot.style.height = "";
+      slot.hidden = k !== i;
+      f.style.transform = `scale(${sc})`;
+      f.style.margin = `${(H * sc - H) / 2}px ${(W * sc - W) / 2}px`;
+    });
+  }
+
+  function go(k) {
+    i = Math.max(0, Math.min(slides.length - 1, k));
+    slides.forEach((s, n) => s.classList.toggle("on", n === i));
+    [...dots.children].forEach((d, n) => d.setAttribute("aria-current", String(n === i)));
+    count.textContent = `${i + 1} / ${slides.length}`;
+    if (location.hash !== `#s${i + 1}`) history.replaceState(null, "", `#s${i + 1}`);
+    fit();
+  }
+
+  document.getElementById("prev").addEventListener("click", () => go(i - 1));
+  document.getElementById("next").addEventListener("click", () => go(i + 1));
+  addEventListener("keydown", (e) => {
+    if (narrow.matches || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); go(i + 1); }
+    else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); go(i - 1); }
+    else if (e.key === "Home") go(0);
+    else if (e.key === "End") go(slides.length - 1);
+  });
+  // click the right two‑thirds of a slide to advance, the left third to go back
+  deck.addEventListener("click", (e) => {
+    if (narrow.matches || e.target.closest("a, button")) return;
+    go(e.clientX > innerWidth / 3 ? i + 1 : i - 1);
+  });
+  addEventListener("resize", fit);
+  narrow.addEventListener("change", fit);
+  addEventListener("hashchange", () => go(fromHash()));
+  go(fromHash());
+})();
+</script>
+
+</body>
+</html>
