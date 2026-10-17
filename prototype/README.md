@@ -63,8 +63,8 @@ What differs on the static site:
 ## Demo tips
 
 - Open `/m` and `/admin` in **two tabs**. They stay in sync through `localStorage` events.
-- **Three views of the rep app.** On a desktop browser, `/m` has a **มือถือ / iPad / เว็บ** (Mobile / iPad / Web) switch in
-  the presenter panel: a phone frame, an iPad frame scaled to fit the window, or the app filling the window. On a real
+- **Three views of the rep app.** On a desktop browser, `/m` has a **เว็บ / iPad / มือถือ** (Web / iPad / Mobile) switch in
+  the presenter panel: the app filling the window, an iPad frame scaled to fit the window, or a phone frame. On a real
   phone or tablet the app is full screen. Screens lay out by the app's own width (Tailwind container queries on
   `@container/app`): one column on a phone, a centred 720 px column with two-column lists and four stat tiles on an
   iPad, 960 px on the web. The back office (`/admin`) is responsive by window width and fits a 390 px phone.

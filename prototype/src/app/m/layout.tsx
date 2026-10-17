@@ -112,9 +112,9 @@ function StatusBar() {
 }
 
 const VIEWS: { id: View; key: string; icon: typeof Smartphone }[] = [
-  { id: "mobile", key: "m.p.vMobile", icon: Smartphone },
-  { id: "ipad", key: "m.p.vIpad", icon: Tablet },
   { id: "web", key: "m.p.vWeb", icon: Monitor },
+  { id: "ipad", key: "m.p.vIpad", icon: Tablet },
+  { id: "mobile", key: "m.p.vMobile", icon: Smartphone },
 ];
 
 const QUICK = [
