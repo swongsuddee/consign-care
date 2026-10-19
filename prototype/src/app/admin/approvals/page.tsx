@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { CheckCircle2, ExternalLink, FileText, History, ShoppingCart, Truck, XCircle } from "lucide-react";
+import { CheckCircle2, ExternalLink, History, ShoppingCart, Truck, XCircle } from "lucide-react";
 import { Avatar } from "@/components/PersonaSwitcher";
 import { toast } from "@/components/toast";
 import { Badge, Button, Card, CardHeader, EmptyState, Tabs } from "@/components/ui";
@@ -12,21 +12,20 @@ import * as ops from "@/lib/ops";
 import { name, pendingApprovals } from "@/lib/selectors";
 import { useCurrentUser, useData, useOp } from "@/lib/store";
 
-type Kind = "q" | "rq" | "pr";
+type Kind = "rq" | "pr";
 
 export default function ApprovalsPage() {
-  const { t, lang, money, rel, date, dateTime } = useFmt();
+  const { t, lang, money, rel, dateTime } = useFmt();
   const d = useData();
   const run = useOp();
   const me = useCurrentUser();
   const pa = pendingApprovals(d);
-  const [tab, setTab] = useState<Kind>("q");
+  const [tab, setTab] = useState<Kind>("rq");
   const [decide, setDecide] = useState<{ kind: Kind; id: string; no: string; approve: boolean } | null>(null);
 
   const submit = (note?: string) => {
     if (!decide) return;
     const { kind, id, no, approve } = decide;
-    if (kind === "q") run(ops.decideQuotation, id, approve, note);
     if (kind === "rq") run(ops.decideRequisition, id, approve, note);
     if (kind === "pr") run(ops.decidePR, id, approve, note);
     if (approve) toast.success(t("a.toast.approved", { ref: no }));
@@ -47,7 +46,7 @@ export default function ApprovalsPage() {
     </div>
   );
 
-  const total = pa.quotations.length + pa.requisitions.length + pa.prs.length;
+  const total = pa.requisitions.length + pa.prs.length;
 
   return (
     <div>
@@ -64,38 +63,10 @@ export default function ApprovalsPage() {
             value={tab}
             onChange={setTab}
             tabs={[
-              { id: "q", label: t("a.nav.quotations"), count: pa.quotations.length },
               { id: "rq", label: t("a.nav.requisitions"), count: pa.requisitions.length },
               { id: "pr", label: t("a.nav.prs"), count: pa.prs.length },
             ]}
           />
-          {tab === "q" && (
-            <List empty={pa.quotations.length === 0}>
-              {pa.quotations.map((q) => {
-                const h = d.hospitals.find((x) => x.id === q.hospitalId);
-                const c = d.cases.find((x) => x.id === q.caseId);
-                const u = d.users.find((x) => x.id === q.createdBy);
-                return (
-                  <Item
-                    key={q.id}
-                    icon={<FileText className="h-5 w-5" />}
-                    tone="bg-brand-50 text-brand-600"
-                    title={
-                      <>
-                        {q.no} <Badge tone="amber">{t("a.appr.discount", { pct: q.discountPct })}</Badge>
-                      </>
-                    }
-                    lines={[
-                      `${name(h, lang)}${c ? ` · ${c.no}` : ""}`,
-                      `${t("g.grandTotal")} ${money(q.total)} · ${t("g.discount")} ${money(q.discount)}`,
-                      `${name(u, lang)} · ${date(q.date)}`,
-                    ]}
-                    actions={actions("q", q.id, q.no, `/admin/quotations/${q.id}`)}
-                  />
-                );
-              })}
-            </List>
-          )}
           {tab === "rq" && (
             <List empty={pa.requisitions.length === 0}>
               {pa.requisitions.map((r) => {
@@ -156,11 +127,9 @@ export default function ApprovalsPage() {
               {d.approvals.slice(0, 12).map((a) => {
                 const u = d.users.find((x) => x.id === a.approverId);
                 const ref =
-                  a.entity === "QUOTATION"
-                    ? d.quotations.find((x) => x.id === a.entityId)?.no
-                    : a.entity === "REQUISITION"
-                      ? d.requisitions.find((x) => x.id === a.entityId)?.no
-                      : d.purchaseRequests.find((x) => x.id === a.entityId)?.no;
+                  a.entity === "REQUISITION"
+                    ? d.requisitions.find((x) => x.id === a.entityId)?.no
+                    : d.purchaseRequests.find((x) => x.id === a.entityId)?.no;
                 return (
                   <li key={a.id} className="flex items-start gap-3 px-5 py-3">
                     <Avatar user={u} size={28} />

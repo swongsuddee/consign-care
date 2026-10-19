@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { AlertCircle, Ban, CheckCircle2, Eye, Receipt, Search, Wallet, Clock } from "lucide-react";
+import { AlertCircle, Ban, CheckCircle2, Eye, Receipt, Wallet, Clock } from "lucide-react";
 import { StatusChip } from "@/components/StatusChip";
 import { toast } from "@/components/toast";
 import { Button, Card, EmptyState, PageLoader, StatTile, Tabs } from "@/components/ui";
-import { ConfirmModal, PageHeader, SearchBox, TableWrap, Td, Th, openPrint, rowCls } from "@/components/admin/kit";
+import { ConfirmModal, PageHeader, TableWrap, Td, openPrint, rowCls, useTable } from "@/components/admin/kit";
 import { useFmt } from "@/lib/format";
 import * as ops from "@/lib/ops";
 import { casePo, caseQuotation, caseRequisition, caseValue, inMonth, name, WAITING_BILLING } from "@/lib/selectors";
@@ -33,7 +33,6 @@ function BillingInner() {
   const run = useOp();
   const sp = useSearchParams();
   const [tab, setTab] = useState<"ready" | "invoices">(sp.get("tab") === "invoices" ? "invoices" : "ready");
-  const [q, setQ] = useState("");
   const [confirm, setConfirm] = useState<{ kind: "paid" | "void"; inv: Invoice } | null>(null);
 
   const ready = d.cases.filter((c) => WAITING_BILLING.includes(c.status));
@@ -44,13 +43,46 @@ function BillingInner() {
   const paidMonth = d.invoices.filter((i) => i.status === "PAID" && i.paidAt && inMonth(i.paidAt.slice(0, 10)));
   const sum = (xs: Invoice[]) => xs.reduce((a, i) => a + i.amount, 0);
 
-  const k = q.trim().toLowerCase();
-  const match = (caseId: string, extra: string[] = []) => {
-    if (!k) return true;
-    const c = d.cases.find((x) => x.id === caseId);
-    const h = d.hospitals.find((x) => x.id === c?.hospitalId);
-    return [c?.no ?? "", h?.name ?? "", h?.nameTh ?? "", ...extra].some((s) => s.toLowerCase().includes(k));
-  };
+  const hospOf = (id?: string) => d.hospitals.find((x) => x.id === id);
+  const hospText = (id?: string) => `${hospOf(id)?.name ?? ""} ${hospOf(id)?.nameTh ?? ""}`;
+  const caseNo = (id: string) => d.cases.find((x) => x.id === id)?.no ?? "";
+
+  const readyTable = useTable(
+    ready,
+    [
+      { key: "case", label: t("g.case"), sort: (c) => c.no, text: (c) => c.no },
+      { key: "date", label: t("g.date"), sort: (c) => c.caseDate, range: { type: "date", get: (c) => c.caseDate } },
+      { key: "hospital", label: t("g.hospital"), sort: (c) => name(hospOf(c.hospitalId), lang), text: (c) => hospText(c.hospitalId) },
+      { key: "po", label: t("doc.po"), sort: (c) => casePo(d, c.id)?.poNo ?? "", text: (c) => casePo(d, c.id)?.poNo ?? "" },
+      {
+        key: "rq",
+        label: t("doc.requisition"),
+        sort: (c) => caseRequisition(d, c.id)?.status ?? "",
+        options: [...["DRAFT", "SUBMITTED", "APPROVED", "ISSUED", "REJECTED"].map((s) => ({ value: s, label: t(`rs.${s}`) })), { value: "NONE", label: t("a.bill.noRequisition") }],
+        value: (c) => caseRequisition(d, c.id)?.status ?? "NONE",
+        multi: true,
+      },
+      { key: "status", label: t("g.status"), sort: (c) => t(`cs.${c.status}`), options: WAITING_BILLING.map((s) => ({ value: s, label: t(`cs.${s}`) })), value: (c) => c.status, multi: true },
+      { key: "amount", label: t("g.amount"), right: true, sort: (c) => amountFor(c.id), range: { type: "number", get: (c) => amountFor(c.id), format: (n) => money(n, 0) } },
+      { key: "action", label: "" },
+    ],
+    { key: "date", dir: "desc" },
+  );
+
+  const invTable = useTable(
+    d.invoices,
+    [
+      { key: "no", label: t("a.bill.invNo"), sort: (i) => i.no, text: (i) => i.no },
+      { key: "hospital", label: t("g.hospital"), sort: (i) => name(hospOf(i.hospitalId), lang), text: (i) => hospText(i.hospitalId) },
+      { key: "case", label: t("g.case"), sort: (i) => caseNo(i.caseId), text: (i) => caseNo(i.caseId) },
+      { key: "amount", label: t("g.amount"), right: true, sort: (i) => i.amount, range: { type: "number", get: (i) => i.amount, format: (n) => money(n, 0) } },
+      { key: "issued", label: t("a.bill.issueDate"), sort: (i) => i.issueDate, range: { type: "date", get: (i) => i.issueDate } },
+      { key: "due", label: t("a.bill.due"), sort: (i) => i.dueDate, range: { type: "date", get: (i) => i.dueDate } },
+      { key: "status", label: t("g.status"), sort: (i) => effStatus(i), options: (["ISSUED", "OVERDUE", "PAID", "VOID"] as const).map((s) => ({ value: s, label: t(`is.${s}`) })), value: (i) => effStatus(i), multi: true },
+      { key: "actions", label: "" },
+    ],
+    { key: "issued", dir: "desc" },
+  );
 
   const issue = (caseId: string) => {
     const inv = run(ops.issueInvoice, caseId);
@@ -81,29 +113,15 @@ function BillingInner() {
               { id: "invoices", label: t("a.bill.invoices"), count: d.invoices.length },
             ]}
           />
-          <SearchBox value={q} onChange={setQ} placeholder={t("g.search")} icon={<Search className="h-4 w-4" />} className="mb-3 lg:w-72" />
         </div>
 
-        {tab === "ready" &&
-          (ready.filter((c) => match(c.id)).length === 0 ? (
-            <EmptyState icon={<CheckCircle2 className="h-6 w-6" />} title={t("a.bill.readyEmpty")} />
-          ) : (
-            <TableWrap maxH="560px">
-              <thead>
-                <tr>
-                  <Th>{t("g.case")}</Th>
-                  <Th>{t("g.hospital")}</Th>
-                  <Th>{t("doc.po")}</Th>
-                  <Th>{t("doc.requisition")}</Th>
-                  <Th>{t("g.status")}</Th>
-                  <Th right>{t("g.amount")}</Th>
-                  <Th />
-                </tr>
-              </thead>
+        {tab === "ready" && (
+          <>
+            {readyTable.summary}
+            <TableWrap maxH="560px" dense>
+              <thead>{readyTable.head}</thead>
               <tbody>
-                {ready
-                  .filter((c) => match(c.id))
-                  .map((c) => {
+                {readyTable.rows.map((c) => {
                     const po = casePo(d, c.id);
                     const rq = caseRequisition(d, c.id);
                     return (
@@ -112,8 +130,8 @@ function BillingInner() {
                           <Link href={`/admin/cases/${c.id}`} className="font-semibold text-brand-700 hover:underline">
                             {c.no}
                           </Link>
-                          <p className="text-xs text-slate-400">{date(c.caseDate)}</p>
                         </Td>
+                        <Td className="whitespace-nowrap">{date(c.caseDate)}</Td>
                         <Td className="max-w-[200px] truncate">{name(d.hospitals.find((h) => h.id === c.hospitalId), lang)}</Td>
                         <Td className="font-mono text-xs">{po?.poNo ?? "—"}</Td>
                         <Td>{rq ? <StatusChip kind="requisition" status={rq.status} /> : <span className="text-slate-300">—</span>}</Td>
@@ -131,29 +149,17 @@ function BillingInner() {
                   })}
               </tbody>
             </TableWrap>
-          ))}
+            {readyTable.rows.length === 0 && <EmptyState icon={<CheckCircle2 className="h-6 w-6" />} title={ready.length ? t("g.noResults") : t("a.bill.readyEmpty")} />}
+          </>
+        )}
 
-        {tab === "invoices" &&
-          (d.invoices.filter((i) => match(i.caseId, [i.no])).length === 0 ? (
-            <EmptyState title={t("g.noResults")} />
-          ) : (
-            <TableWrap maxH="560px">
-              <thead>
-                <tr>
-                  <Th>{t("a.bill.invNo")}</Th>
-                  <Th>{t("g.hospital")}</Th>
-                  <Th>{t("g.case")}</Th>
-                  <Th right>{t("g.amount")}</Th>
-                  <Th>{t("a.bill.issueDate")}</Th>
-                  <Th>{t("a.bill.due")}</Th>
-                  <Th>{t("g.status")}</Th>
-                  <Th right>{t("g.actions")}</Th>
-                </tr>
-              </thead>
+        {tab === "invoices" && (
+          <>
+            {invTable.summary}
+            <TableWrap maxH="560px" dense>
+              <thead>{invTable.head}</thead>
               <tbody>
-                {d.invoices
-                  .filter((i) => match(i.caseId, [i.no]))
-                  .map((i) => {
+                {invTable.rows.map((i) => {
                     const c = d.cases.find((x) => x.id === i.caseId);
                     const st = effStatus(i);
                     return (
@@ -177,13 +183,13 @@ function BillingInner() {
                         </Td>
                         <Td right>
                           <div className="flex justify-end gap-1">
-                            <Button size="sm" variant="ghost" onClick={() => openPrint("invoice", i.id, false)} title={t("g.view")}>
-                              <Eye className="h-3.5 w-3.5" /> <span className="hidden xl:inline">{t("g.view")}</span>
+                            <Button size="sm" variant="ghost" onClick={() => openPrint("invoice", i.id, false)} title={t("g.view")} aria-label={t("g.view")}>
+                              <Eye className="h-3.5 w-3.5" />
                             </Button>
                             {["ISSUED", "OVERDUE"].includes(i.status) && (
                               <>
                                 <Button size="sm" variant="success" onClick={() => setConfirm({ kind: "paid", inv: i })}>
-                                  <Wallet className="h-3.5 w-3.5" /> {t("a.bill.markPaid")}
+                                  <Wallet className="h-3.5 w-3.5" /> {t("a.bill.markPaidShort")}
                                 </Button>
                                 <Button size="sm" variant="ghost" className="text-rose-600" onClick={() => setConfirm({ kind: "void", inv: i })} title={t("a.bill.void")}>
                                   <Ban className="h-3.5 w-3.5" />
@@ -197,7 +203,9 @@ function BillingInner() {
                   })}
               </tbody>
             </TableWrap>
-          ))}
+            {invTable.rows.length === 0 && <EmptyState title={t("g.noResults")} />}
+          </>
+        )}
       </Card>
       <p className="mt-3 text-xs text-slate-400">{t("a.bill.totalNote", { n: num(d.invoices.length) })}</p>
 

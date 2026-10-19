@@ -107,7 +107,7 @@ function SideNav({ path }: { path: string }) {
   const active = activeNav(path);
   const pa = pendingApprovals(d);
   const badges = {
-    approvals: pa.quotations.length + pa.requisitions.length + pa.prs.length,
+    approvals: pa.requisitions.length + pa.prs.length,
     pos: d.incomingPos.length,
     billing: d.cases.filter((c) => WAITING_BILLING.includes(c.status)).length,
   };

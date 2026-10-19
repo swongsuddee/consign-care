@@ -26,6 +26,8 @@ export interface ExtractedItem {
 export interface ExtractedPatient {
   hn?: string;
   an?: string;
+  /** only the bundled demo sample carries a (fictional) name; the photo readers never return one */
+  name?: string;
   doctorCode?: string;
   items: ExtractedItem[];
 }
@@ -45,15 +47,19 @@ export const originals = new Map<string, Blob>();
 
 const item = (raw: string, confidence = 0.97): ExtractedItem => ({ raw, confidence, ...parseSticker(raw) });
 
-/** Transcription of the bundled sample (patient names were redacted from the image). */
+/**
+ * Transcription of the bundled sample. The real patient details were redacted from the image, so the demo fills in
+ * fictional ones (HN, AN, name) to show the patient pages complete.
+ */
 const SAMPLE: Extraction = {
   engine: "sample",
   hospitalName: "Phayathai Sriracha",
   date: "2026-10-17",
   patients: [
     {
-      hn: "●●-●●●●●",
-      an: "●●-●●●●●",
+      hn: "HN-640112",
+      an: "69-10231",
+      name: "นางสาวพิมพ์ชนก ทดสอบ",
       doctorCode: "1152",
       items: [
         item("ENSITE-SEK-5-I-01 11411683 182998"),
@@ -65,8 +71,9 @@ const SAMPLE: Extraction = {
       ],
     },
     {
-      hn: "●●-●●●●●",
-      an: "●●-●●●●●",
+      hn: "HN-580437",
+      an: "69-10232",
+      name: "นายวีระพงษ์ ทดสอบ",
       doctorCode: "1152",
       items: [
         item("401436 11534387 193083"),

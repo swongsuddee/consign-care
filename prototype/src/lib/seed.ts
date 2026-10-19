@@ -11,7 +11,32 @@ import {
   WAREHOUSE,
 } from "./ops";
 
-export const DATA_VERSION = 5;
+export const DATA_VERSION = 9;
+
+/* ---------------------------------------------------------------- mock patients (fictional) */
+
+const TITLES = [
+  ["นาย", "M"],
+  ["นาง", "F"],
+  ["นางสาว", "F"],
+] as const;
+const FIRST: Record<"M" | "F", string[]> = {
+  M: ["สมชาย", "ประเสริฐ", "วิชัย", "ธนากร", "อนุชา", "สุรศักดิ์", "กิตติพงษ์", "ณัฐวุฒิ", "ชัยวัฒน์", "พงศกร", "ธีรพงษ์", "ศุภชัย"],
+  F: ["สุดารัตน์", "มาลี", "วรรณา", "จันทร์เพ็ญ", "ปิยะนุช", "อรุณี", "กัญญารัตน์", "ศิริพร", "ณัฐธิดา", "พรทิพย์", "รัตนา", "สุภาวดี"],
+};
+const LAST = ["ใจดี", "สุขสวัสดิ์", "ทองคำ", "ศรีสมบูรณ์", "บุญมา", "แสงทอง", "วงศ์ไทย", "รุ่งเรือง", "พึ่งบุญ", "มีสุข", "เจริญผล", "ปัญญาดี", "สายสุวรรณ", "อินทร์แก้ว"];
+
+/** Fictional patient details for a seeded case, the same every time for the same case number. */
+function mockPatient(n: number): Pick<Case, "patientHn" | "patientAn" | "patientName"> {
+  const [title, sex] = TITLES[n % 3];
+  const first = FIRST[sex][(n * 7) % FIRST[sex].length];
+  const last = LAST[(n * 5) % LAST.length];
+  return {
+    patientHn: `HN-${((n * 37) % 900000) + 100000}`,
+    patientAn: `69-${String(10000 + ((n * 13) % 9000)).padStart(5, "0")}`,
+    patientName: `${title}${first} ${last}`,
+  };
+}
 
 /* ---------------------------------------------------------------- master data */
 
@@ -150,8 +175,8 @@ const CASES: Spec[] = [
   ["C24996", "h-bkk", S, "2026-10-14", "PO_RECEIVED", [["p-as", 2]], "doc-somchai", "knee"],
   ["C24987", "h-bkk", S, "2026-10-09", "REQUISITIONED", [["p-ct", 2]], "doc-krit", "pci"],
   ["C24970", "h-bkk", S, "2026-10-10", "PO_RECEIVED", [["p-cn", 1]], "doc-somchai", "knee"],
-  ["C24999", "h-bkk", A, "2026-10-16", "USAGE_RECORDED", [["p-se", 1]], "doc-somchai", "acl"],
-  ["C24997", "h-bkk", A, "2026-10-15", "USAGE_RECORDED", [["p-st", 1]], "doc-anan", "knee"],
+  ["C24999", "h-bkk", A, "2026-10-16", "QUOTED", [["p-se", 1]], "doc-somchai", "acl"],
+  ["C24997", "h-bkk", A, "2026-10-15", "QUOTED", [["p-st", 1]], "doc-anan", "knee"],
   ["C24983", "h-bkk", A, "2026-10-08", "BILLED", [["p-sa", 1]], "doc-anan", "shoulder"],
   ["C24978", "h-bkk", A, "2026-10-06", "BILLED", [["p-bl", 1]], "doc-krit", "pci"],
   ["C24975", "h-bkk", S, "2026-10-05", "BILLED", [["p-as", 1]], "doc-somchai", "knee"],
@@ -168,8 +193,8 @@ const CASES: Spec[] = [
   ["C24985", "h-bmr", A, "2026-10-14", "QUOTED", [["p-ct", 1], ["p-se", 1]], "doc-anan", "pci"],
   ["C24992", "h-bmr", S, "2026-10-12", "PO_RECEIVED", [["p-bl", 1], ["p-as", 1], ["p-sa", 1]], "doc-somchai", "knee"],
   ["C24981", "h-bmr", S, "2026-09-29", "REQUISITIONED", [["p-sa", 1]], "doc-anan", "shoulder"],
-  ["C24993", "h-bmr", A, "2026-10-13", "USAGE_RECORDED", [["p-as", 1]], "doc-somchai", "knee"],
-  ["C24986", "h-bmr", A, "2026-10-09", "USAGE_RECORDED", [["p-st", 1]], "doc-anan", "acl"],
+  ["C24993", "h-bmr", A, "2026-10-13", "QUOTED", [["p-as", 1]], "doc-somchai", "knee"],
+  ["C24986", "h-bmr", A, "2026-10-09", "QUOTED", [["p-st", 1]], "doc-anan", "acl"],
   ["C24979", "h-bmr", A, "2026-10-07", "BILLED", [["p-sa", 1]], "doc-anan", "shoulder"],
   ["C24976", "h-bmr", A, "2026-10-04", "BILLED", [["p-bl", 1]], "doc-krit", "pci"],
   ["C24963", "h-bmr", A, "2026-10-02", "CLOSED", [["p-ct", 1]], "doc-krit", "pci"],
@@ -177,15 +202,15 @@ const CASES: Spec[] = [
   // Samitivej – open 6, waiting PO 1, waiting billing 1, 9 used
   ["C24980", "h-smv", N, "2026-10-12", "WAITING_PO", [["p-sa", 1], ["p-se", 1]], "doc-anan", "shoulder"],
   ["C24989", "h-smv", S, "2026-10-10", "REQUISITIONED", [["p-as", 1], ["p-cn", 1]], "doc-somchai", "knee"],
-  ["C24991", "h-smv", N, "2026-10-12", "USAGE_RECORDED", [["p-cn", 1]], "doc-somchai", "knee"],
-  ["C24984", "h-smv", N, "2026-10-08", "USAGE_RECORDED", [["p-ct", 1]], "doc-krit", "pci"],
+  ["C24991", "h-smv", N, "2026-10-12", "QUOTED", [["p-cn", 1]], "doc-somchai", "knee"],
+  ["C24984", "h-smv", N, "2026-10-08", "QUOTED", [["p-ct", 1]], "doc-krit", "pci"],
   ["C24977", "h-smv", N, "2026-10-06", "BILLED", [["p-bl", 1]], "doc-krit", "pci"],
   ["C24972", "h-smv", N, "2026-10-03", "BILLED", [["p-sa", 1]], "doc-anan", "acl"],
   ["C24961", "h-smv", N, "2026-10-01", "CLOSED", [["p-as", 1]], "doc-somchai", "knee"],
   // Phyathai 2 – open 4, waiting billing 2, 6 used
   ["C24935", "h-pyt", S, "2026-09-24", "PO_RECEIVED", [["p-se", 1]], "doc-anan", "acl"],
   ["C24940", "h-pyt", S, "2026-09-26", "REQUISITIONED", [["p-ct", 1]], "doc-krit", "pci"],
-  ["C24988", "h-pyt", N, "2026-10-09", "USAGE_RECORDED", [["p-as", 1], ["p-cn", 2]], "doc-somchai", "knee"],
+  ["C24988", "h-pyt", N, "2026-10-09", "QUOTED", [["p-as", 1], ["p-cn", 2]], "doc-somchai", "knee"],
   ["C24973", "h-pyt", N, "2026-10-04", "BILLED", [["p-bl", 1]], "doc-krit", "pci"],
   ["C24959", "h-pyt", N, "2026-10-01", "CLOSED", [["p-st", 2]], "doc-anan", "acl"],
 ];
@@ -278,10 +303,11 @@ export function buildSeed(): Data {
 
   /* cases (process oldest first so FEFO consumption is chronological) */
   const specs = [...CASES].sort((a, b) => a[3].localeCompare(b[3]));
-  let qtSeq = 1;
+  let qtSeq = 0;
   let rqSeq = 1;
   let invSeq = 1;
-  const qtNoFor = (no: string) => (no === "C25001" ? "QT-2026-001" : `QT-2026-${String(++qtSeq).padStart(3, "0")}`);
+  // one running number from QT-00001, in the order the quotations were made
+  const qtNoFor = () => `QT-${String(++qtSeq).padStart(5, "0")}`;
 
   for (const [no, hospitalId, repId, date, status, items, doctorId, procedure] of specs) {
     const reached = ORDER.slice(0, ORDER.indexOf(status) + 1);
@@ -290,9 +316,11 @@ export function buildSeed(): Data {
       const [dd, hh] = OFFSET[st]!;
       history[st] = clamp(iso(addDays(date, dd), hh, (seq * 7) % 60));
     }
+    // the quotation is made when usage is recorded (no approval step)
+    if (history.QUOTED) history.QUOTED = history.USAGE_RECORDED;
     if (no === "C25001") {
       history.USAGE_RECORDED = iso("2026-10-15", 16, 20);
-      history.QUOTED = iso("2026-10-16", 10, 5);
+      history.QUOTED = history.USAGE_RECORDED;
       history.WAITING_PO = iso("2026-10-16", 11, 30);
     }
     const c: Case = {
@@ -301,7 +329,7 @@ export function buildSeed(): Data {
       hospitalId,
       repId,
       doctorId,
-      patientHn: `HN-${(parseInt(no.slice(1), 10) * 37) % 900000 + 100000}`,
+      ...mockPatient(parseInt(no.slice(1), 10)),
       procedure,
       caseDate: date,
       status,
@@ -342,16 +370,16 @@ export function buildSeed(): Data {
       const discountPct = no === "C24994" ? 12 : 0;
       const t = totals(docItems, discountPct);
       const qDate = history.QUOTED!.slice(0, 10);
-      const qno = qtNoFor(no);
+      const qno = qtNoFor();
       const qStatus =
-        status === "QUOTED" ? (discountPct > 10 ? "PENDING_APPROVAL" : "APPROVED") : status === "WAITING_PO" ? "SENT" : "ACCEPTED";
+        status === "QUOTED" ? "APPROVED" : status === "WAITING_PO" ? "SENT" : "ACCEPTED";
       const q = {
         id: `qt-${no}`,
         no: qno,
         caseId: c.id,
         hospitalId,
-        date: no === "C25001" ? "2026-10-16" : qDate,
-        validUntil: addDays(no === "C25001" ? "2026-10-16" : qDate, 30),
+        date: qDate,
+        validUntil: addDays(qDate, 30),
         items: docItems,
         discountPct,
         subtotal: t.subtotal,
@@ -360,7 +388,7 @@ export function buildSeed(): Data {
         total: t.total,
         status: qStatus as "SENT",
         createdBy: "u-kanya",
-        sentVia: qStatus === "PENDING_APPROVAL" || qStatus === "APPROVED" ? undefined : (["EMAIL", "LINE"] as ("EMAIL" | "LINE")[]),
+        sentVia: qStatus === "APPROVED" ? undefined : (["EMAIL", "LINE"] as ("EMAIL" | "LINE")[]),
       };
       d.quotations.push(q);
 
@@ -514,11 +542,10 @@ export function buildSeed(): Data {
   const caseId = (no: string) => `case-${no}`;
   d.activity.push(
     { id: sid("act"), actorId: "u-kanya", action: "poUploaded", entity: "PO", entityId: "po-C24992", ref: poNumberFor("h-bmr", d.quotations.find((q) => q.caseId === caseId("C24992"))!.no), hospitalId: "h-bmr", at: ago(2) },
-    { id: sid("act"), actorId: "u-kanya", action: "quotationCreated", entity: "QUOTATION", entityId: "qt-C25001", ref: "QT-2026-001", hospitalId: "h-bkk", at: ago(5) },
+    { id: sid("act"), actorId: "u-kanya", action: "quotationCreated", entity: "QUOTATION", entityId: "qt-C25001", ref: d.quotations.find((q) => q.id === "qt-C25001")!.no, hospitalId: "h-bkk", at: ago(5) },
     { id: sid("act"), actorId: "u-anan", action: "usageRecorded", entity: "CASE", entityId: caseId("C24999"), ref: "C24999", hospitalId: "h-bkk", at: ago(24) },
     { id: sid("act"), actorId: "u-anan", action: "usageRecorded", entity: "CASE", entityId: caseId("C24997"), ref: "C24997", hospitalId: "h-bkk", at: ago(30) },
     { id: sid("act"), actorId: "u-sinenart", action: "usageRecorded", entity: "CASE", entityId: caseId("C25001"), ref: "C25001", hospitalId: "h-bkk", at: ago(40) },
-    { id: sid("act"), actorId: "u-somchai", action: "quotationApproved", entity: "QUOTATION", entityId: "qt-C24985", ref: d.quotations.find((q) => q.caseId === caseId("C24985"))!.no, hospitalId: "h-bmr", at: ago(46) },
     { id: sid("act"), actorId: "u-pim", action: "requisitionIssued", entity: "REQUISITION", entityId: "rq-C24989", ref: d.requisitions.find((r) => r.caseId === caseId("C24989"))!.no, hospitalId: "h-smv", at: ago(52) },
     { id: sid("act"), actorId: "u-ratana", action: "invoiceIssued", entity: "INVOICE", entityId: "inv-C24975", ref: d.invoices.find((r) => r.caseId === caseId("C24975"))!.no, hospitalId: "h-bkk", at: ago(60) },
     { id: sid("act"), actorId: "u-ratana", action: "invoicePaid", entity: "INVOICE", entityId: "inv-C24968", ref: d.invoices.find((r) => r.caseId === caseId("C24968"))!.no, hospitalId: "h-bkk", at: ago(72) },

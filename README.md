@@ -7,7 +7,7 @@
 | [`prototype/`](prototype) | Clickable Next.js prototype: rep mobile app (`/m`), back office (`/admin`), landing page (`/`). See its [README](prototype/README.md) and [DEMO](prototype/DEMO.md). |
 | [`design/`](design) | System design source for Truss: brand, domain model, specification. |
 | [`docs/`](docs) | Domain notes. |
-| [`prototype/public/presentation/`](prototype/public/presentation) | 15-slide project deck, plain HTML. Served at `/presentation/index.html` and linked from the landing page; also opens straight from the file. |
+| [`prototype/public/presentation/`](prototype/public/presentation) | 17-slide project deck, plain HTML. Served at `/presentation/index.html` and linked from the landing page; also opens straight from the file. |
 | [`exports/`](exports) | Sample quotation export (PDF, Excel). |
 
 Live demo (GitHub Pages, after it is enabled): https://swongsuddee.github.io/consign-care/

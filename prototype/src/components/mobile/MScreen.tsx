@@ -21,12 +21,15 @@ export function MScreen({
   right,
   children,
   tabs = true,
+  onBack,
   header,
   bodyClassName,
   footer,
 }: {
   title?: ReactNode;
   back?: string | true;
+  /** runs instead of navigating, e.g. a step back inside a multi-page form */
+  onBack?: () => void;
   right?: ReactNode;
   children: ReactNode;
   tabs?: boolean;
@@ -43,9 +46,9 @@ export function MScreen({
         <div className={COLUMN}>
         {header ?? (
           <div className="flex h-14 items-center gap-2 px-3">
-            {back ? (
+            {back || onBack ? (
               <button
-                onClick={() => (back === true ? router.back() : router.push(back))}
+                onClick={() => (onBack ? onBack() : back === true ? router.back() : router.push(back as string))}
                 className="grid h-9 w-9 place-items-center rounded-full hover:bg-white/10"
                 aria-label="back"
               >

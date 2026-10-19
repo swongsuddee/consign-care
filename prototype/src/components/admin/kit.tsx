@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { ArrowDown, ArrowLeft, ArrowUp, ChevronsUpDown, X } from "lucide-react";
+import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DocumentSheet, type DocProps } from "@/components/DocumentSheet";
 import { Button, Modal, Textarea, Field, cx } from "@/components/ui";
 import { useT } from "@/i18n";
 import { useCurrentUser, useStore } from "@/lib/store";
 import { viewDoc } from "@/components/DocViewer";
+import { DateRangeFilter, MultiSelectFilter, NumberRangeFilter } from "@/components/admin/RangeFilters";
 
 /* ---------------------------------------------------------------- page header */
 
@@ -90,10 +91,11 @@ export function LinkButton({
 
 /* ---------------------------------------------------------------- tables */
 
-export function TableWrap({ children, className, maxH }: { children: ReactNode; className?: string; maxH?: string }) {
+/** `dense` tightens cell padding for wide tables, e.g. one with filters in its header. */
+export function TableWrap({ children, className, maxH, dense }: { children: ReactNode; className?: string; maxH?: string; dense?: boolean }) {
   return (
     <div className={cx("thin-scrollbar overflow-x-auto", maxH && "overflow-y-auto", className)} style={maxH ? { maxHeight: maxH } : undefined}>
-      <table className="w-full min-w-max border-separate border-spacing-0 text-sm">{children}</table>
+      <table className={cx("w-full min-w-max border-separate border-spacing-0 text-sm", dense && "[&_td]:px-3 [&_th]:px-3")}>{children}</table>
     </div>
   );
 }
@@ -117,6 +119,159 @@ export function Td({ children, className, right }: { children?: ReactNode; class
 }
 
 export const rowCls = "transition-colors hover:bg-brand-50/40";
+
+/* ---------------------------------------------------------------- sortable, filterable table head */
+
+export interface Col<T> {
+  key: string;
+  label: ReactNode;
+  right?: boolean;
+  /** value to sort by; omit to make the column unsortable */
+  sort?: (r: T) => string | number;
+  /** a search box in the header: the row's text must contain what is typed (case-insensitive) */
+  text?: (r: T) => string;
+  /** a dropdown in the header: the row's value must equal the choice (or, with `multi`, be one of the ticked ones) */
+  options?: { value: string; label: string }[];
+  value?: (r: T) => string;
+  multi?: boolean;
+  /** a from–to pair in the header: dates (yyyy-mm-dd) or numbers; either end can be left open */
+  range?: { type: "date" | "number"; get: (r: T) => string | number; format?: (n: number) => string };
+}
+
+/**
+ * Column filters and sorting for a table. Each header cell holds the column name (click to sort: ascending,
+ * descending, off) and, under it, that column's search box or dropdown.
+ */
+export function useTable<T>(rows: T[], cols: Col<T>[], initial?: { key: string; dir: "asc" | "desc" }) {
+  const { t } = useT();
+  const [sort, setSort] = useState(initial ?? null);
+  const [filters, setFilters] = useState<Record<string, string>>({});
+
+  const out = useMemo(() => {
+    let list = rows.filter((r) =>
+      cols.every((c) => {
+        const f = filters[c.key]?.trim().toLowerCase();
+        if (!f) return true;
+        if (c.text) return c.text(r).toLowerCase().includes(f);
+        if (c.value && c.multi) return filters[c.key].split(",").includes(c.value(r));
+        if (c.value) return c.value(r) === filters[c.key];
+        return true;
+      }) &&
+      cols.every((c) => {
+        if (!c.range) return true;
+        const lo = filters[`${c.key}.min`]?.trim();
+        const hi = filters[`${c.key}.max`]?.trim();
+        const v = c.range.get(r);
+        if (c.range.type === "number") return (!lo || Number(v) >= Number(lo)) && (!hi || Number(v) <= Number(hi));
+        return (!lo || String(v) >= lo) && (!hi || String(v) <= hi);
+      }),
+    );
+    const col = sort && cols.find((c) => c.key === sort.key);
+    if (col?.sort) {
+      const k = col.sort;
+      list = [...list].sort((a, b) => {
+        const x = k(a);
+        const y = k(b);
+        const c = typeof x === "number" && typeof y === "number" ? x - y : String(x).localeCompare(String(y), "th");
+        return sort!.dir === "asc" ? c : -c;
+      });
+    }
+    return list;
+  }, [rows, cols, filters, sort]);
+
+  /** the largest value in the column, rounded up, shown as the open end of a number range */
+  const rangeMax = (c: Col<T>) => Math.ceil(Math.max(0, ...rows.map((r) => Number(c.range!.get(r)) || 0)));
+  const toggle = (key: string) =>
+    setSort((s) => (s?.key !== key ? { key, dir: "asc" } : s.dir === "asc" ? { key, dir: "desc" } : null));
+  const filtered = Object.values(filters).some((v) => v.trim());
+
+  const head = (
+    <tr>
+      {cols.map((c) => {
+        const dir = sort?.key === c.key ? sort.dir : null;
+        const Icon = dir === "asc" ? ArrowUp : dir === "desc" ? ArrowDown : ChevronsUpDown;
+        return (
+          <Th key={c.key} right={c.right} className="align-top">
+            {c.sort ? (
+              <button
+                onClick={() => toggle(c.key)}
+                className={cx("inline-flex items-center gap-1 uppercase tracking-wide hover:text-slate-800", dir && "text-brand-700", c.right && "flex-row-reverse")}
+                aria-label={`${t("a.table.sortBy")} ${typeof c.label === "string" ? c.label : c.key}`}
+              >
+                {c.label}
+                <Icon className={cx("h-3 w-3 shrink-0", !dir && "opacity-40")} />
+              </button>
+            ) : (
+              c.label
+            )}
+            {c.range && (
+              <div className="mt-1.5 w-[112px] font-normal normal-case tracking-normal">
+                {c.range.type === "date" ? (
+                  <DateRangeFilter from={filters[`${c.key}.min`] ?? ""} to={filters[`${c.key}.max`] ?? ""} onChange={(a, b) => setFilters((f) => ({ ...f, [`${c.key}.min`]: a, [`${c.key}.max`]: b }))} />
+                ) : (
+                  <NumberRangeFilter
+                    min={filters[`${c.key}.min`] ?? ""}
+                    max={filters[`${c.key}.max`] ?? ""}
+                    limit={rangeMax(c)}
+                    format={c.range.format ?? ((n) => n.toLocaleString())}
+                    onChange={(a, b) => setFilters((f) => ({ ...f, [`${c.key}.min`]: a, [`${c.key}.max`]: b }))}
+                  />
+                )}
+              </div>
+            )}
+            {(c.text || c.options) && (
+              <div className="mt-1.5 font-normal normal-case tracking-normal">
+                {c.options && c.multi ? (
+                  <div className="w-[112px]">
+                    <MultiSelectFilter
+                      options={c.options.map((o) => ({ ...o, count: rows.filter((r) => c.value!(r) === o.value).length }))}
+                      selected={filters[c.key] ? filters[c.key].split(",") : []}
+                      onChange={(v) => setFilters((f) => ({ ...f, [c.key]: v.join(",") }))}
+                    />
+                  </div>
+                ) : c.options ? (
+                  <select
+                    value={filters[c.key] ?? ""}
+                    onChange={(e) => setFilters((f) => ({ ...f, [c.key]: e.target.value }))}
+                    className="h-7 w-full min-w-[96px] rounded-md border border-slate-200 bg-white px-1.5 text-xs text-slate-700 outline-none focus:border-brand-400"
+                  >
+                    <option value="">{t("g.all")}</option>
+                    {c.options.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    value={filters[c.key] ?? ""}
+                    onChange={(e) => setFilters((f) => ({ ...f, [c.key]: e.target.value }))}
+                    placeholder={t("a.table.filter")}
+                    size={6}
+                    className={cx("h-7 w-full min-w-[72px] rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-700 outline-none placeholder:text-slate-300 focus:border-brand-400", c.right && "text-right")}
+                  />
+                )}
+              </div>
+            )}
+          </Th>
+        );
+      })}
+    </tr>
+  );
+
+  const summary = (
+    <div className="flex items-center gap-2 px-4 py-2 text-xs text-slate-500">
+      {t("a.table.showing", { n: out.length, total: rows.length })}
+      {filtered && (
+        <button onClick={() => setFilters({})} className="inline-flex items-center gap-0.5 font-medium text-brand-700 hover:underline">
+          <X className="h-3 w-3" /> {t("a.table.clear")}
+        </button>
+      )}
+    </div>
+  );
+
+  return { rows: out, head, summary };
+}
 
 /* ---------------------------------------------------------------- key/value */
 

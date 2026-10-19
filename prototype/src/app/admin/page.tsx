@@ -31,7 +31,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const all = caseStats(d, d.cases);
   const pa = pendingApprovals(d);
-  const pending = pa.quotations.length + pa.requisitions.length + pa.prs.length;
+  const pending = pa.requisitions.length + pa.prs.length;
   const expiring = expiringLots(d, 90);
 
   const chart = (Object.keys(STATUS_COLORS) as CaseStatus[]).map((s) => ({

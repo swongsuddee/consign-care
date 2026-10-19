@@ -36,7 +36,7 @@ export function GlobalSearch({ className }: { className?: string }) {
     if (k.length < 2) return [];
     const hosp = (id: string) => name(d.hospitals.find((h) => h.id === id), lang);
     const cases: Hit[] = d.cases
-      .filter((c) => [c.no, c.patientHn ?? "", hosp(c.hospitalId)].some((x) => x.toLowerCase().includes(k)))
+      .filter((c) => [c.no, c.patientHn ?? "", c.patientName ?? "", hosp(c.hospitalId)].some((x) => x.toLowerCase().includes(k)))
       .slice(0, 5)
       .map((c) => ({ href: `/admin/cases/${c.id}`, title: c.no, sub: `${hosp(c.hospitalId)} · ${t(`cs.${c.status}`)}`, kind: "case" }));
     const products: Hit[] = d.products

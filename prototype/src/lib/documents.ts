@@ -45,7 +45,6 @@ export function quotationDoc(d: Data, id: string): DocProps | null {
     remark: q.note || "ราคาตามสัญญาโรงพยาบาล สินค้าฝากขาย (Consignment) ใช้ในหัตถการแล้ว",
     signatures: [
       { th: "ผู้จัดทำ", en: "Prepared by", name: creator?.name },
-      { th: "ผู้อนุมัติ", en: "Approved by", name: q.status === "PENDING_APPROVAL" ? undefined : "Wichai S." },
       { th: "ผู้รับใบเสนอราคา", en: "Accepted by (Customer)" },
     ],
   };

@@ -7,7 +7,7 @@ export const landing: Dict = {
   "l.nav.roles": { th: "ผู้ใช้งาน", en: "Roles" },
   "l.nav.demo": { th: "ลำดับการสาธิต", en: "Demo path" },
   "l.nav.deck": { th: "งานนำเสนอ", en: "Presentation" },
-  "l.deck.link": { th: "ดูงานนำเสนอโครงการ (15 สไลด์)", en: "View the project presentation (15 slides)" },
+  "l.deck.link": { th: "ดูงานนำเสนอโครงการ (17 สไลด์)", en: "View the project presentation (17 slides)" },
 
   "l.hero.badge": { th: "แพลตฟอร์มติดตามเคสสินค้าฝากขายและจัดซื้อ", en: "Consignment Case Tracking & Procurement" },
   "l.hero.sub": { th: "จากเคสถึงวางบิล ครบจบในที่เดียว", en: "One platform for every consignment case" },

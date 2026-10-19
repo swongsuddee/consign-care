@@ -55,7 +55,7 @@ function CasesInner() {
       if (!k) return true;
       const h = d.hospitals.find((x) => x.id === c.hospitalId);
       const doc = d.doctors.find((x) => x.id === c.doctorId);
-      return [c.no, c.patientHn ?? "", h?.name ?? "", h?.nameTh ?? "", doc?.name ?? "", doc?.nameTh ?? ""].some((x) => x.toLowerCase().includes(k));
+      return [c.no, c.patientHn ?? "", c.patientName ?? "", h?.name ?? "", h?.nameTh ?? "", doc?.name ?? "", doc?.nameTh ?? ""].some((x) => x.toLowerCase().includes(k));
     });
   }, [d, q, status, hospital, rep]);
 
@@ -171,6 +171,7 @@ function CasesInner() {
                       <Link href={`/admin/cases/${c.id}`} className="font-semibold text-brand-700 hover:underline" onClick={(e) => e.stopPropagation()}>
                         {c.no}
                       </Link>
+                      {c.patientName && <p className="max-w-[160px] truncate text-xs text-slate-500">{c.patientName}</p>}
                     </Td>
                     <Td className="whitespace-nowrap">{date(c.caseDate)}</Td>
                     <Td>

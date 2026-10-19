@@ -164,6 +164,8 @@ export interface Case {
   repId: string;
   doctorId?: string;
   patientHn?: string;
+  /** patient name-surname, entered by the rep (the photo readers never return names) */
+  patientName?: string;
   /** admission number from the patient sticker */
   patientAn?: string;
   procedure?: string;
@@ -176,14 +178,11 @@ export interface Case {
   note?: string;
 }
 
-export type QuotationStatus =
-  | "DRAFT"
-  | "PENDING_APPROVAL"
-  | "APPROVED"
-  | "SENT"
-  | "ACCEPTED"
-  | "EXPIRED"
-  | "REJECTED";
+/**
+ * Quotations are approved automatically when created (APPROVED), then sent. An admin can still force-reject one that
+ * the hospital has not accepted yet (REJECTED); its case can then get a new quotation.
+ */
+export type QuotationStatus = "APPROVED" | "SENT" | "ACCEPTED" | "EXPIRED" | "REJECTED";
 
 export interface DocItem {
   productId: string;
@@ -209,6 +208,8 @@ export interface Quotation {
   createdBy: string;
   sentVia?: ("EMAIL" | "LINE")[];
   note?: string;
+  /** set when an admin force-rejects the quotation */
+  rejected?: { by: string; at: string; reason: string };
 }
 
 export interface CustomerPO {
@@ -319,7 +320,7 @@ export interface Notification {
 
 export interface Approval {
   id: string;
-  entity: "QUOTATION" | "REQUISITION" | "PR";
+  entity: "REQUISITION" | "PR";
   entityId: string;
   approverId: string;
   decision: "APPROVED" | "REJECTED";
@@ -328,10 +329,13 @@ export interface Approval {
 }
 
 export interface OcrDraft {
+  /** which way the case is being created (the choice on /m/cases/new) */
+  mode?: "scan" | "manual";
   hospitalId: string;
   caseDate: string;
   doctorId?: string;
   patientHn?: string;
+  patientName?: string;
   patientAn?: string;
   procedure?: string;
   photos: CasePhoto[];

@@ -50,7 +50,7 @@ export function CaseTimeline({
   const sub: Record<StepId, string | undefined> = {
     usage: undefined,
     quotation: q?.no,
-    po: po?.poNo ?? (c.status === "WAITING_PO" || c.status === "QUOTED" ? t("step.waitingPo") : undefined),
+    po: po?.poNo ?? (c.status === "WAITING_PO" ? t("step.waitingPo") : c.status === "QUOTED" && q ? t("step.waitingSend") : undefined),
     requisition: rq ? `${rq.no} · ${t(`rs.${rq.status}`)}` : undefined,
     billing: inv ? `${inv.no} · ${t(`is.${inv.status}`)}` : undefined,
     closed: undefined,

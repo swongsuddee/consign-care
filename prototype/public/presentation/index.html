@@ -224,7 +224,6 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
 
 <main class="deck" id="deck" aria-label="ConsignCare presentation">
 
-<!-- 1 -->
 <section class="slide s-title" id="s1" aria-label="Title">
   <div class="pad">
     <div class="brand"><span class="mark"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>ConsignCare</div>
@@ -244,7 +243,6 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
   </div>
 </section>
 
-<!-- 2 -->
 <section class="slide" id="s2" aria-label="A consignment case today">
   <div class="pad">
     <div class="eyebrow">The problem <span class="th">เคสฝากขายวันนี้</span></div>
@@ -263,7 +261,6 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
   <div class="foot"><span>Journey "A consignment case today" · persona: sales rep</span><span>02</span></div>
 </section>
 
-<!-- 3 -->
 <section class="slide" id="s3" aria-label="What it costs">
   <div class="pad">
     <div class="eyebrow">Outcomes <span class="th">ตัวชี้วัด ก่อน → เป้าหมาย</span></div>
@@ -282,7 +279,6 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
   <div class="foot"><span>Stage 0 · outcomes and impact map in Truss</span><span>03</span></div>
 </section>
 
-<!-- 4 -->
 <section class="slide" id="s4" aria-label="Who uses it">
   <div class="pad">
     <div class="eyebrow">One platform, two front doors <span class="th">ผู้ใช้งาน</span></div>
@@ -292,7 +288,7 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
         <span class="kind">Mobile app (PWA)</span>
         <ul>
           <li><b>Sales representative</b>Sees only assigned hospitals. Creates a case, photographs or scans the stickers, follows the case to billing, looks up any lot.</li>
-          <li><b>Sales manager</b>Approves from anywhere: discounts over 10%, requisitions, purchase requests.</li>
+          <li><b>Sales manager</b>Approves from anywhere: requisitions and purchase requests.</li>
         </ul>
       </div>
       <div class="door">
@@ -318,7 +314,6 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
   <div class="foot"><span>13 actors · 18 use cases</span><span>04</span></div>
 </section>
 
-<!-- 5 -->
 <section class="slide" id="s5" aria-label="Case lifecycle">
   <div class="pad">
     <div class="eyebrow">Case lifecycle <span class="th">เส้นทางของเคส</span></div>
@@ -326,7 +321,7 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
     <div class="life">
       <div class="state done"><span class="dot"></span><code>DRAFT</code><span class="th">สร้างเคส</span><span class="who">Rep</span></div>
       <div class="state done"><span class="dot"></span><code>USAGE_RECORDED</code><span class="th">บันทึกการใช้</span><span class="who">Rep · stock cut at the hospital</span></div>
-      <div class="state done"><span class="dot"></span><code>QUOTED</code><span class="th">ออกใบเสนอราคา</span><span class="who">Admin · manager if discount &gt;10%</span></div>
+      <div class="state done"><span class="dot"></span><code>QUOTED</code><span class="th">ออกใบเสนอราคา</span><span class="who">Automatic · with the usage</span></div>
       <div class="state wait"><span class="dot"></span><code>WAITING_PO</code><span class="th">รอ PO</span><span class="who">Hospital · follow‑up reminders</span></div>
       <div class="state"><span class="dot"></span><code>PO_RECEIVED</code><span class="th">ได้รับ PO</span><span class="who">Admin or rep scans the PO</span></div>
       <div class="state"><span class="dot"></span><code>REQUISITIONED</code><span class="th">ใบเบิก</span><span class="who">Warehouse refills the shelf</span></div>
@@ -337,7 +332,7 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
     <span class="docs-k">Documents along the way</span>
     <div class="docs" style="margin-bottom:22px">
       <div class="doc"><span class="no">C25001</span><span class="t">Case</span><span class="e">one per patient</span></div>
-      <div class="doc"><span class="no">QT-2026-001</span><span class="t">ใบเสนอราคา</span><span class="e">Quotation · PDF / Excel</span></div>
+      <div class="doc"><span class="no">QT-00040</span><span class="t">ใบเสนอราคา</span><span class="e">Quotation · PDF / Excel</span></div>
       <div class="doc"><span class="no">BKH-PO-26-1007</span><span class="t">PO โรงพยาบาล</span><span class="e">Hospital PO</span></div>
       <div class="doc"><span class="no">RQ-2026-…</span><span class="t">ใบเบิก</span><span class="e">Requisition · PDF / Excel</span></div>
       <div class="doc"><span class="no">INV-2026-…</span><span class="t">ใบแจ้งหนี้</span><span class="e">Invoice · PDF / Excel</span></div>
@@ -346,7 +341,6 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
   <div class="foot"><span>State machine: the API refuses any transition the diagram lacks</span><span>05</span></div>
 </section>
 
-<!-- 6 -->
 <section class="slide s-capture" id="s6" aria-label="Capture by photo">
   <div class="pad">
     <div class="eyebrow">Capture <span class="th">ถ่ายรูปใบบันทึกการใช้</span></div>
@@ -374,20 +368,18 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
   <div class="foot"><span>Real sheet, Phayathai Sriracha · names and dates of birth covered and never stored (PDPA)</span><span>06</span></div>
 </section>
 
-<!-- 7 -->
 <section class="slide" id="s7" aria-label="Mobile: new case">
   <div class="pad">
     <div class="eyebrow">Mobile · new case <span class="th">สร้างเคสใหม่</span></div>
     <div class="screens">
-      <div class="screen"><img class="phone ph" src="img/m-new.jpg" alt="New case: a photo read immediately, items grouped by patient with quantity steppers"><p class="cap"><b>Read the moment it is added</b>Camera or upload. Items appear under the photo, grouped by patient, each with − / +.</p></div>
-      <div class="screen"><img class="phone ph" src="img/m-sheet.jpg" alt="Bottom sheet listing consignment lots at the hospital with quantity steppers"><p class="cap"><b>Or pick from the shelf</b>The hospital's consignment lots, with expiry and on‑hand. Quantity is capped at what is there.</p></div>
-      <div class="screen"><img class="phone ph" src="img/m-review.jpg" alt="Review screen: two patients found, hospital matched from the handwriting"><p class="cap"><b>Confirm</b>Hospital matched from the sheet. Two patients become two cases; stock is cut at that hospital.</p></div>
+      <div class="screen"><img class="phone ph" src="img/m-new.jpg" alt="New case: scan with the rear camera, upload from the gallery, or create manually"><p class="cap"><b>Three ways in</b>Scan with the rear camera, upload several photos from the gallery, or fill the form by hand.</p></div>
+      <div class="screen"><img class="phone ph" src="img/m-summary.jpg" alt="Patient details: two patients and twelve items found, hospital read from the handwriting"><p class="cap"><b>Patients first</b>How many patients the photo holds, the items found, and the hospital read from the handwriting.</p></div>
+      <div class="screen"><img class="phone ph" src="img/m-review.jpg" alt="Patient 1 of 2: HN, AN, name, doctor and the items with quantity steppers"><p class="cap"><b>One page per patient</b>HN, AN, name and doctor, items with − / +. Each patient becomes a case; stock is cut at that hospital.</p></div>
     </div>
   </div>
   <div class="foot"><span>Target: record a case in under 3 minutes</span><span>07</span></div>
 </section>
 
-<!-- 8 -->
 <section class="slide" id="s8" aria-label="Mobile: follow the case">
   <div class="pad">
     <div class="eyebrow">Mobile · every day <span class="th">หน้าหลัก · เคส · สแกน</span></div>
@@ -400,8 +392,26 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
   <div class="foot"><span>Thai and English · works offline with the bundled sample</span><span>08</span></div>
 </section>
 
-<!-- 9 -->
-<section class="slide" id="s9" aria-label="Back office dashboard">
+<section class="slide" id="s9" aria-label="Phone, iPad and web">
+  <div class="pad">
+    <div class="eyebrow">One app, three screens <span class="th">มือถือ · iPad · เว็บ</span></div>
+    <div class="wide">
+      <div class="shotbox"><img class="shot" src="img/v-ipad.jpg" alt="The rep app in the iPad preview, cases in two columns"></div>
+      <div class="side">
+        <h2 style="font-size:34px">Fits the phone, the iPad and the desk.</h2>
+        <ul class="points">
+          <li><b>Phone</b>: one column, the tab bar under the thumb.</li>
+          <li><b>iPad</b>: a centred column, cases and accounts in two columns, four numbers in a row.</li>
+          <li><b>Web</b>: the same app across a laptop screen.</li>
+          <li><b>Presenter switch</b> on a laptop shows each view; a real phone or iPad picks its own.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Back office fits a 390 px phone too</span><span>09</span></div>
+</section>
+
+<section class="slide" id="s10" aria-label="Back office dashboard">
   <div class="pad">
     <div class="eyebrow">Back office <span class="th">แดชบอร์ด</span></div>
     <div class="wide">
@@ -410,38 +420,55 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
         <h2 style="font-size:34px">Status of every case without a phone call.</h2>
         <ul class="points">
           <li><b>Next step on every case</b>, coloured by who owes it: us, the hospital or the manager.</li>
-          <li><b>Approvals queue</b> for discounts over 10%, requisitions and purchase requests. The manager decides; the record keeps who and when.</li>
+          <li><b>Approvals queue</b> for requisitions and purchase requests. The manager decides; the record keeps who and when.</li>
           <li><b>Per‑hospital view</b> of usage, waiting POs and unbilled value.</li>
           <li><b>Two tabs stay in sync</b>: a case created on the phone appears here at once.</li>
         </ul>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Roles see only their hospitals and their work</span><span>09</span></div>
+  <div class="foot"><span>Roles see only their hospitals and their work</span><span>10</span></div>
 </section>
 
-<!-- 10 -->
-<section class="slide" id="s10" aria-label="Documents">
+<section class="slide" id="s11" aria-label="Documents">
   <div class="pad">
     <div class="eyebrow">Documents <span class="th">ใบเสนอราคา · ใบเบิก · ใบแจ้งหนี้</span></div>
     <div class="wide">
-      <div class="shotbox"><img class="shot" src="img/a-quote.jpg" alt="Quotation QT-2026-001 rendered as an A4 document with PDF and Excel download"></div>
+      <div class="shotbox"><img class="shot" src="img/a-quote.jpg" alt="Quotation QT-00040 rendered as an A4 document with PDF and Excel download"></div>
       <div class="side">
         <h2 style="font-size:34px">Typed once, sent as the hospital expects it.</h2>
         <ul class="points">
           <li><b>Quotation from the case usage</b> at the hospital's contract price, VAT 7%, LOT / SN on every line.</li>
           <li><b>A4 PDF and Excel</b> for quotation, requisition and invoice. Excel keeps live formulas for totals.</li>
           <li><b>Opens over any screen</b>, on the phone or the back office, without leaving the case.</li>
-          <li><b>Send by email or LINE</b>; the PO reply is matched back to the quotation.</li>
+          <li><b>Made and approved automatically</b> the moment usage is recorded, then sent by email or LINE; the PO reply is matched back. An admin can still reject one, with a reason.</li>
         </ul>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Doc numbers: QT-YYYY-NNN · PO prefix per hospital (PYS, BKH …)</span><span>10</span></div>
+  <div class="foot"><span>Quotations run QT-00001, QT-00002 … · PO prefix per hospital (PYS, BKH …)</span><span>11</span></div>
 </section>
 
-<!-- 11 -->
-<section class="slide" id="s11" aria-label="Inventory and procurement">
+<section class="slide" id="s12" aria-label="Find any document">
+  <div class="pad">
+    <div class="eyebrow">Find any document <span class="th">ค้นหาและกรองตามคอลัมน์</span></div>
+    <div class="wide">
+      <div class="shotbox"><img class="shot" src="img/a-quotes.jpg" alt="Quotation list filtered by a date range picked on a calendar and a price range"></div>
+      <div class="side">
+        <h2 style="font-size:34px">Every column is its own filter.</h2>
+        <ul class="points">
+          <li><b>Date range on a calendar</b>: click the first and the last day.</li>
+          <li><b>Price range</b> on a two‑knob slider, from ฿0 to the highest total.</li>
+          <li><b>Status and people</b> as multi‑select lists with counts; text columns search as you type.</li>
+          <li><b>Click a heading to sort.</b> Excel export keeps the filter and the order.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Quotations · hospital POs · billing and invoices</span><span>12</span></div>
+</section>
+
+<section class="slide" id="s13" aria-label="Inventory and procurement">
   <div class="pad">
     <div class="eyebrow">Inventory &amp; procurement <span class="th">คลังสินค้า · ใบเบิก · ใบขอซื้อ</span></div>
     <div class="wide">
@@ -457,11 +484,10 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
       </div>
     </div>
   </div>
-  <div class="foot"><span>Target: expired write‑off under 1% a year</span><span>11</span></div>
+  <div class="foot"><span>Target: expired write‑off under 1% a year</span><span>13</span></div>
 </section>
 
-<!-- 12 -->
-<section class="slide" id="s12" aria-label="System design in Truss">
+<section class="slide" id="s14" aria-label="System design in Truss">
   <div class="pad">
     <div class="eyebrow">System design <span class="th">ออกแบบใน Truss</span></div>
     <h2>The whole system is designed in Truss, from outcomes to the release plan.</h2>
@@ -483,11 +509,10 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
       <span class="file">specification.pdf</span><span class="file">specification-landscape.pdf</span><span class="file">overview.pdf</span><span class="file">test-cases.xlsx</span><span class="file">consigncare.truss.zip</span><span class="file">schema.sql</span><span class="file">acceptance.feature</span><span class="file">+ 44 Mermaid diagrams</span>
     </div>
   </div>
-  <div class="foot"><span>Lint: 0 conflicts · 12 advisories · exports in exports/truss</span><span>12</span></div>
+  <div class="foot"><span>Lint: 0 conflicts · 12 advisories · exports in exports/truss</span><span>14</span></div>
 </section>
 
-<!-- 13 -->
-<section class="slide" id="s13" aria-label="Architecture">
+<section class="slide" id="s15" aria-label="Architecture">
   <div class="pad">
     <div class="eyebrow">Target architecture <span class="th">สถาปัตยกรรม</span></div>
     <h2>A plain TypeScript stack, hosted in Thailand.</h2>
@@ -500,43 +525,41 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
       <div class="layer"><span class="k">Platform</span><ul><li>AWS ECS Fargate <span>· ap‑southeast‑7 (Bangkok)</span></li><li>Auth.js with Entra ID / Google</li><li>OpenTelemetry, Grafana, Sentry · GitHub Actions</li></ul></div>
     </div>
   </div>
-  <div class="foot"><span>Patterns: state machine · repository · adapter · outbox · strategy</span><span>13</span></div>
+  <div class="foot"><span>Patterns: state machine · repository · adapter · outbox · strategy</span><span>15</span></div>
 </section>
 
-<!-- 14 -->
-<section class="slide" id="s14" aria-label="The prototype">
+<section class="slide" id="s16" aria-label="The prototype">
   <div class="pad">
     <div class="eyebrow">The prototype <span class="th">ต้นแบบที่คลิกได้</span></div>
     <div class="two">
       <div style="display:flex;flex-direction:column;gap:18px;min-width:0">
         <h2 style="font-size:36px">Click through the whole case, on any laptop, with no server.</h2>
         <table class="ledger">
-          <tr><td><span class="tag green">Real</span></td><td>Barcode decoding on the device, PDF and Excel files, both apps, approvals, stock movements, TH / EN.</td></tr>
+          <tr><td><span class="tag green">Real</span></td><td>Barcode decoding on the device, PDF and Excel files, both apps on phone, iPad and web, approvals, stock movements, TH / EN.</td></tr>
           <tr><td><span class="tag">Ready</span></td><td>Claude vision reading; it switches on when an API key is set on the server.</td></tr>
           <tr><td><span class="tag amber">Simulated</span></td><td>Email, LINE, SSO and the hospital's PO reply. EP product names and prices are placeholders.</td></tr>
           <tr><td><span class="tag">Data</span></td><td>The browser's localStorage is the database: one key per table, backup, restore and reset in the back office.</td></tr>
         </table>
-        <p class="small">Open the phone app and the back office in two tabs; a case confirmed on the phone appears in the back office at once.</p>
+        <p class="small">Live at <b>swongsuddee.github.io/consign-care</b>. Open the phone app and the back office in two tabs; a case confirmed on the phone appears in the back office at once.</p>
       </div>
       <div style="min-width:0;overflow:hidden;border-radius:10px;align-self:start"><img class="shot" src="img/a-db.jpg" alt="Local database page listing tables with rows and sizes"></div>
     </div>
   </div>
-  <div class="foot"><span>prototype/ · DEMO.md has the click‑by‑click story</span><span>14</span></div>
+  <div class="foot"><span>prototype/ · DEMO.md has the click‑by‑click story</span><span>16</span></div>
 </section>
 
-<!-- 15 -->
-<section class="slide s-end" id="s15" aria-label="Next steps">
+<section class="slide s-end" id="s17" aria-label="Next steps">
   <div class="pad">
     <div class="eyebrow">Next steps</div>
     <h2>What we need to move from prototype to pilot.</h2>
     <div class="next">
       <div class="item"><span class="w">01</span><div><h3>Real EP catalogue</h3><p>Product names, contract prices and reorder points for the Phayathai Sriracha EP items.</p></div></div>
       <div class="item"><span class="w">02</span><div><h3>Switch on AI reading</h3><p>Set the API key and measure accuracy on a month of real sheets against the 3‑minute target.</p></div></div>
-      <div class="item"><span class="w">03</span><div><h3>PDPA sign‑off</h3><p>Confirm that HN / AN only are kept, names and birth dates never stored, and photos retained for the agreed period.</p></div></div>
+      <div class="item"><span class="w">03</span><div><h3>PDPA sign‑off</h3><p>Consent and access rules for patient names, HN and AN; birth dates never stored; photos kept only for the agreed period.</p></div></div>
       <div class="item"><span class="w">04</span><div><h3>Pilot one hospital</h3><p>One hospital, two reps, one admin for four weeks; track billed share and usage‑to‑invoice days.</p></div></div>
     </div>
   </div>
-  <div class="foot"><span>ConsignCare · From case to billing, all in one place</span><span>15</span></div>
+  <div class="foot"><span>ConsignCare · From case to billing, all in one place</span><span>17</span></div>
 </section>
 
 </main>
@@ -544,7 +567,7 @@ table.measures { width: 100%; border-collapse: collapse; font-size: 16px; }
 <nav class="bar" aria-label="Slides">
   <button type="button" id="prev" aria-label="Previous slide">←</button>
   <div class="dots" id="dots"></div>
-  <span class="count" id="count">1 / 15</span>
+  <span class="count" id="count">1 / 17</span>
   <button type="button" id="next" aria-label="Next slide">→</button>
 </nav>
 

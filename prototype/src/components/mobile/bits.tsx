@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, ChevronRight, ClipboardCheck, FileText, Package, Receipt, ShoppingCart, Stethoscope, Truck } from "lucide-react";
+import { Building2, ChevronRight, ClipboardCheck, FileText, Package, Receipt, ShoppingCart, Stethoscope, Truck, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useFmt } from "@/lib/format";
 import { name } from "@/lib/selectors";
@@ -89,6 +89,11 @@ export function CaseRow({ c, d }: { c: Case; d: Data }) {
         <div className="min-w-0">
           <p className="text-sm font-bold text-navy-800">{t("g.case")} {c.no}</p>
           <p className="truncate text-xs text-slate-500">{name(h, lang)}</p>
+          {c.patientName && (
+            <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-slate-700">
+              <UserRound className="h-3 w-3 shrink-0 text-slate-400" /> {c.patientName}
+            </p>
+          )}
         </div>
         <StatusChip kind="case" status={c.status} />
       </div>

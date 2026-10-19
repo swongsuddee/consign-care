@@ -15,8 +15,6 @@ const CASE: Record<string, Tone> = {
   CANCELLED: "red",
 };
 const QUOTATION: Record<string, Tone> = {
-  DRAFT: "gray",
-  PENDING_APPROVAL: "amber",
   APPROVED: "teal",
   SENT: "blue",
   ACCEPTED: "green",

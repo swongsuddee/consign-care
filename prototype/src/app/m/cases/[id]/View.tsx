@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, FileText, PartyPopper, Pencil, Send, Upload, XCircle } from "lucide-react";
+import { CheckCircle2, FileText, PartyPopper, Pencil, Upload, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -35,7 +35,6 @@ function CaseTracking({ id }: { id: string }) {
   const { t, lang, date } = useFmt();
   const sp = useSearchParams();
   const d = useData();
-  const run = useOp();
   const [showPo, setShowPo] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -61,6 +60,7 @@ function CaseTracking({ id }: { id: string }) {
     [t("g.doctor"), name(d.doctors.find((x) => x.id === c.doctorId), lang)],
     [t("g.procedure"), name(d.procedures.find((x) => x.id === c.procedure), lang)],
     [t("g.patientHn"), maskHn(c.patientHn)],
+    [t("g.patientName"), c.patientName ?? "-"],
     ...(c.patientAn ? [["AN", maskHn(c.patientAn)] as [string, string]] : []),
     [t("g.rep"), name(rep, lang)],
   ];
@@ -131,24 +131,8 @@ function CaseTracking({ id }: { id: string }) {
                     <FileText className="h-3.5 w-3.5" /> {t("doc.viewBill")}
                   </Button>
                 );
-              if (step === "quotation" && !q && c.status === "USAGE_RECORDED")
-                return (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-brand-200 text-brand-700"
-                    onClick={() => {
-                      run((dd, actor) => {
-                        ops.log(dd, actor, "quotationRequested", "CASE", c.id, c.no, c.hospitalId);
-                        ops.notify(dd, "*", "quotationRequested", c.no, `/admin/cases/${c.id}`, c.hospitalId);
-                      });
-                      toast.success(t("m.case.qtRequested"), t("m.case.qtRequestedDesc"));
-                    }}
-                  >
-                    <Send className="h-3.5 w-3.5" /> {t("m.case.requestQt")}
-                  </Button>
-                );
-              if (step === "po" && (c.status === "WAITING_PO" || c.status === "QUOTED") && q)
+              // the hospital can only answer a quotation it has been sent
+              if (step === "po" && c.status === "WAITING_PO" && q)
                 return (
                   <Button size="sm" onClick={() => setShowPo(true)}>
                     <Upload className="h-3.5 w-3.5" /> {t("m.case.uploadPo")}
@@ -289,10 +273,11 @@ function EditCaseModal({ open, onClose, c }: { open: boolean; onClose: () => voi
   const [doctorId, setDoctorId] = useState(c.doctorId ?? "");
   const [procedure, setProcedure] = useState(c.procedure ?? "");
   const [patientHn, setPatientHn] = useState(c.patientHn ?? "");
+  const [patientName, setPatientName] = useState(c.patientName ?? "");
   const [caseDate, setCaseDate] = useState(c.caseDate);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const save = () => {
-    run(ops.updateCase, c.id, { doctorId: doctorId || undefined, procedure: procedure || undefined, patientHn: patientHn || undefined, caseDate });
+    run(ops.updateCase, c.id, { doctorId: doctorId || undefined, procedure: procedure || undefined, patientHn: patientHn || undefined, patientName: patientName.trim() || undefined, caseDate });
     toast.success(t("m.case.updated", { no: c.no }));
     onClose();
   };
@@ -360,6 +345,9 @@ function EditCaseModal({ open, onClose, c }: { open: boolean; onClose: () => voi
           </Field>
           <Field label={t("g.patientHn")}>
             <Input value={patientHn} onChange={(e) => setPatientHn(e.target.value)} />
+          </Field>
+          <Field label={t("g.patientName")}>
+            <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} autoComplete="off" />
           </Field>
         </div>
       )}

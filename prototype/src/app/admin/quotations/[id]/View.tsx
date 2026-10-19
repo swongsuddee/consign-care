@@ -2,28 +2,29 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, ClipboardCheck, FileDown, FileSpreadsheet, FolderKanban, Inbox, Lock, Mail, MessageCircle, Printer, XCircle } from "lucide-react";
+import { ClipboardCheck, FileDown, FileSpreadsheet, FolderKanban, Inbox, Lock, Mail, MessageCircle, Printer, ShieldX } from "lucide-react";
 import { StatusChip } from "@/components/StatusChip";
 import { toast } from "@/components/toast";
-import { Badge, Button, Card, CardHeader, EmptyState } from "@/components/ui";
-import { DecisionModal, DocPreview, KV, LinkButton, PageHeader, openPrint } from "@/components/admin/kit";
+import { Badge, Button, Card, CardHeader, EmptyState, Field, Modal, Textarea } from "@/components/ui";
+import { DocPreview, KV, LinkButton, PageHeader, openPrint } from "@/components/admin/kit";
 import { SendQuotationModal } from "@/components/admin/SendQuotationModal";
 import { quotationDoc } from "@/lib/documents";
 import { downloadDocExcel, downloadDocPdf } from "@/lib/exportDoc";
 import { useFmt } from "@/lib/format";
 import * as ops from "@/lib/ops";
 import { name } from "@/lib/selectors";
-import { useData, useOp } from "@/lib/store";
+import { useCurrentUser, useData, useOp } from "@/lib/store";
 import { useRouteParam } from "@/lib/route-param";
 
 export default function QuotationDetailPage({ id: idSeg }: { id: string }) {
   const id = useRouteParam("id", idSeg);
-  const { t, lang, money, date } = useFmt();
+  const { t, lang, money, date, dateTime } = useFmt();
   const d = useData();
   const run = useOp();
   const [send, setSend] = useState<"EMAIL" | "LINE" | null>(null);
-  const [decide, setDecide] = useState<boolean | null>(null);
   const [busy, setBusy] = useState<"pdf" | "xlsx" | null>(null);
+  const [rejecting, setRejecting] = useState(false);
+  const me = useCurrentUser();
   const q = d.quotations.find((x) => x.id === id);
   const doc = q ? quotationDoc(d, q.id) : null;
 
@@ -39,8 +40,8 @@ export default function QuotationDetailPage({ id: idSeg }: { id: string }) {
   const creator = d.users.find((u) => u.id === q.createdBy);
   const incoming = d.incomingPos.find((p) => p.quotationNo === q.no);
   const po = d.customerPos.find((p) => p.quotationId === q.id);
-  const pending = q.status === "PENDING_APPROVAL";
-  const canSend = ["DRAFT", "APPROVED", "SENT"].includes(q.status);
+  const canSend = ["APPROVED", "SENT"].includes(q.status);
+  const canReject = ops.canForceReject(d, me.id, q);
   const exportFile = async (kind: "pdf" | "xlsx") => {
     setBusy(kind);
     try {
@@ -53,7 +54,6 @@ export default function QuotationDetailPage({ id: idSeg }: { id: string }) {
       setBusy(null);
     }
   };
-  const approval = d.approvals.find((a) => a.entity === "QUOTATION" && a.entityId === q.id);
 
   return (
     <div>
@@ -87,36 +87,21 @@ export default function QuotationDetailPage({ id: idSeg }: { id: string }) {
           <Card>
             <CardHeader title={t("a.qt.actions")} />
             <div className="space-y-3 p-5">
-              {pending && (
-                <>
-                  <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
-                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>
-                      <b>{t("a.qt.pendingBannerTitle")}</b>
-                      <br />
-                      <span className="text-xs">{t("a.qt.pendingDetail", { pct: q.discountPct, limit: ops.DISCOUNT_APPROVAL_LIMIT })}</span>
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button variant="success" onClick={() => setDecide(true)}>
-                      <CheckCircle2 className="h-4 w-4" /> {t("a.dec.approve")}
-                    </Button>
-                    <Button variant="outline" className="text-rose-600" onClick={() => setDecide(false)}>
-                      <XCircle className="h-4 w-4" /> {t("a.dec.reject")}
-                    </Button>
-                  </div>
-                </>
-              )}
               <div className="grid grid-cols-3 gap-2">
                 <ActionTile icon={<FileDown className="h-5 w-5" />} label={t("doc.exportPdf")} cls="text-rose-600 bg-rose-50" onClick={() => void exportFile("pdf")} />
                 <ActionTile icon={<Mail className="h-5 w-5" />} label={t("doc.sendEmail")} cls="text-brand-700 bg-brand-50" disabled={!canSend} onClick={() => setSend("EMAIL")} />
                 <ActionTile icon={<MessageCircle className="h-5 w-5" />} label={t("doc.sendLine")} cls="text-[#06C755] bg-emerald-50" disabled={!canSend} onClick={() => setSend("LINE")} />
               </div>
               {!canSend && (
-                <p className="flex items-start gap-1.5 text-xs text-slate-500">
+                <p className={`flex items-start gap-1.5 text-xs ${q.status === "REJECTED" ? "text-rose-600" : "text-slate-500"}`}>
                   <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  {pending ? t("a.qt.lockedPending") : q.status === "REJECTED" ? t("a.qt.lockedRejected") : t("a.qt.lockedAccepted")}
+                  {t(q.status === "REJECTED" ? "a.qt.lockedRejected" : "a.qt.lockedAccepted")}
                 </p>
+              )}
+              {canReject && (
+                <Button variant="outline" className="w-full text-rose-600 hover:bg-rose-50" onClick={() => setRejecting(true)}>
+                  <ShieldX className="h-4 w-4" /> {t("a.qt.forceReject")}
+                </Button>
               )}
               {q.sentVia?.length ? (
                 <p className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
@@ -171,10 +156,16 @@ export default function QuotationDetailPage({ id: idSeg }: { id: string }) {
               <KV label={t("a.qt.validUntil")}>{date(q.validUntil)}</KV>
               <KV label={t("a.createdBy")}>{name(creator, lang)}</KV>
               <KV label={t("g.discount")}>{q.discountPct}%</KV>
-              {approval && (
-                <KV label={t("a.appr.decidedBy")} className="col-span-2">
-                  {name(d.users.find((u) => u.id === approval.approverId), lang)} · {t(`qs.${approval.decision}`)}
-                  {approval.note ? ` · “${approval.note}”` : ""}
+              <KV label={t("g.status")} className="col-span-2">
+                <span className="flex flex-wrap items-center gap-1.5">
+                  <StatusChip kind="quotation" status={q.status} />
+                  {q.status !== "REJECTED" && <span className="text-xs text-slate-500">{t("a.qt.autoApproved")}</span>}
+                </span>
+              </KV>
+              {q.rejected && (
+                <KV label={t("a.qt.rejectedBy")} className="col-span-2">
+                  {name(d.users.find((u) => u.id === q.rejected!.by), lang)} · {dateTime(q.rejected.at)}
+                  <span className="block text-xs italic text-rose-600">“{q.rejected.reason}”</span>
                 </KV>
               )}
             </div>
@@ -201,16 +192,13 @@ export default function QuotationDetailPage({ id: idSeg }: { id: string }) {
       </div>
 
       <SendQuotationModal quotationId={q.id} channel={send} onClose={() => setSend(null)} />
-      {decide !== null && (
-        <DecisionModal
-          open
-          approve={decide}
-          refNo={q.no}
-          onClose={() => setDecide(null)}
-          onSubmit={(note) => {
-            run(ops.decideQuotation, q.id, decide, note);
-            if (decide) toast.success(t("a.toast.approved", { ref: q.no }), t("a.qt.nowSendable"));
-            else toast.warning(t("a.toast.rejected", { ref: q.no }));
+      {rejecting && (
+        <ForceRejectModal
+          no={q.no}
+          onClose={() => setRejecting(false)}
+          onReject={(reason) => {
+            run(ops.forceRejectQuotation, q.id, reason);
+            toast.warning(t("a.qt.rejectedToast", { no: q.no }), reason);
           }}
         />
       )}
@@ -228,5 +216,40 @@ function ActionTile({ icon, label, cls, onClick, disabled }: { icon: React.React
       <span className={`grid h-10 w-10 place-items-center rounded-xl ${cls}`}>{icon}</span>
       <span className="text-center leading-tight">{label}</span>
     </button>
+  );
+}
+
+function ForceRejectModal({ no, onClose, onReject }: { no: string; onClose: () => void; onReject: (reason: string) => void }) {
+  const { t } = useFmt();
+  const [reason, setReason] = useState("");
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      size="sm"
+      title={t("a.qt.forceRejectTitle", { no })}
+      footer={
+        <>
+          <Button variant="outline" onClick={onClose}>
+            {t("g.cancel")}
+          </Button>
+          <Button
+            variant="danger"
+            disabled={!reason.trim()}
+            onClick={() => {
+              onReject(reason.trim());
+              onClose();
+            }}
+          >
+            <ShieldX className="h-4 w-4" /> {t("a.dec.reject")}
+          </Button>
+        </>
+      }
+    >
+      <p className="mb-3 text-sm text-slate-600">{t("a.qt.forceRejectDesc")}</p>
+      <Field label={t("a.qt.rejectReason")} required>
+        <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("a.qt.rejectReasonPh")} rows={3} autoFocus />
+      </Field>
+    </Modal>
   );
 }

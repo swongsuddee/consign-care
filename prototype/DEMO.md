@@ -17,19 +17,23 @@ Story: *Two EP ablation cases were done at Phayathai Sriracha this morning. The 
 ### 1. Rep turns one barcode photo into two cases, on mobile (Tab A, ~1.5 min)
 1. `/m` login: any input works. Click **Sign In** [เข้าสู่ระบบ] (or **Sign in with SSO**).
 2. Dashboard: "Hello, Sinenart", tiles **12 / 5 / 8 / 26**, Recent Activity.
-3. **New Case** [สร้างเคสใหม่]. Leave Hospital on **Read from the photo (AI)** [อ่านจากรูป (AI)].
-   The **Equipment used** [อุปกรณ์ที่ใช้] list has three ways in:
-   - **Select** [เลือกรายการ] opens a bottom sheet with the consignment stock at the hospital. Tap a lot to add it (tap again for +1). **Scan** [สแกน] inside the sheet reads stickers one by one.
-   - **Camera** [กล้อง] takes a photo.
-   - **Upload** [อัปโหลด] picks photos.
+3. **New Case** [สร้างเคสใหม่] first asks how to record the case:
+   - **Scan QR / barcode** [สแกน QR / บาร์โค้ด] opens the rear camera. Take a photo of the stickers or the usage sheet.
+   - **Upload from gallery** [อัปโหลดจากคลังภาพ] picks one or more photos.
+   - **Create manually** [สร้างเคสเอง]: hospital, date, patient no. (HN), patient name-surname, doctor, operation, and
+     the equipment, picked from the hospital's consignment stock (**Select** [เลือกรายการ], − / + capped at what is on
+     hand) or scanned. **Save case** [บันทึกเคส] creates the case straight away.
 
-   A photo is read the moment it is added: the barcodes found are listed under it, grouped by patient, and any item can be removed with ×. Review reuses that reading instead of reading the photo again. Picked items carry their quantity (− / +), capped at what is on hand. The form is saved as a draft, so a refresh keeps it; use **Start over** [เริ่มใหม่] to clear it.
-   For the demo tap the sample **Real sheet · 2 patients (Phayathai Sriracha)** [ใบบันทึกจริง · 2 ผู้ป่วย]. It is the
-   hospital's real usage sheet with patient names and birth dates redacted. Then **Next · AI reads the photo**.
-4. Review: **"Found 2 patients · 12 items"** [พบ 2 ผู้ป่วย · 12 รายการ]. The hospital (*Phayathai Sriracha*) and the date (17 Oct 2026)
-   were read from the handwriting. Each patient card has HN / AN (masked) and doctor **1152**. Every sticker shows
+   Photos go to the patient details page (step 4). For the demo on a laptop, tap the sample **Real sheet · 2 patients
+   (Phayathai Sriracha)** [ใบบันทึกจริง · 2 ผู้ป่วย] under "No camera?". It is the hospital's real usage sheet with
+   patient names and birth dates redacted. A half-finished case is kept as a draft; the choice screen offers to continue it.
+4. Patient details: the patient count comes first, **2 patients · 12 items** [2 ผู้ป่วย · 12 รายการ], with the
+   hospital, the date and the list of patients. A photo taken with the camera can be saved to the phone's gallery from
+   here (**Save to gallery** [บันทึกลงคลังภาพ] opens the share sheet). Then **Next · Patient 1/2** shows one page per
+   patient; − / + changes a quantity. The hospital (*Phayathai Sriracha*) and the date (17 Oct 2026)
+   were read from the handwriting. Each patient page has HN, AN and name-surname (fictional details stand in for the redacted ones on the sample) and doctor **1152**. Every sticker shows
    **REF · LOT · SN**: the text printed under each barcode is "REF LOT SERIAL". One EnSite line is flagged **Check** because
-   its sticker is torn on the sheet. Click **Confirm · 2 cases · 12 items** [ยืนยัน · 2 เคส · 12 รายการ].
+   its sticker is torn on the sheet. On the last patient click **Confirm · 2 cases · 12 items** [ยืนยัน · 2 เคส · 12 รายการ].
 5. Two cases are created, **C25002** and **C25003**, one per patient, and the Phayathai Sriracha consignment stock is deducted.
    Open C25002: each line shows its LOT and SN.
    *(Optional: **Scan** tab › Simulate scan a sticker such as "402570 11325569 184797" › REF / LOT / SN.)*
@@ -41,11 +45,13 @@ Story: *Two EP ablation cases were done at Phayathai Sriracha this morning. The 
 
 ### 2. Sales admin quotes and emails (Tab B, ~1 min)
 1. `/admin` dashboard: KPIs, cases by status, per-hospital table, expiring lots. C25002 is now in **Recent activity**.
-2. **Cases** › **C25002**. The orange **Next step** panel says **Create quotation**.
-3. The quotation form is prefilled: doc no `QT-2026-0NN`, contract prices, VAT 7%, total.
-   *(Optional: set discount to 12% to show the "Pending manager approval" banner, then set it back to 0.)*
-   Click **Save quotation**.
-4. On the quotation page, **Download PDF** [ดาวน์โหลด PDF] and **Download Excel** [ดาวน์โหลด Excel] save `QT-2026-0NN.pdf` / `.xlsx`.
+2. **Cases** › **C25002**. Its quotation was created and approved automatically the moment the usage was recorded
+   (doc no `QT-000NN`, one running number from QT-00001, contract prices, VAT 7%), so the orange **Next step** panel
+   says **Send quotation**. Only the **Admin** persona [ผู้ดูแลระบบ] can force-reject a quotation (**Reject (admin)**
+   [ไม่อนุมัติ (ผู้ดูแลระบบ)], reason required) before the hospital accepts it with a PO; the case then waits for a new
+   one, issued from **Create quotation**, where a discount can be added.
+3. Open the quotation from the case.
+4. On the quotation page, **Download PDF** [ดาวน์โหลด PDF] and **Download Excel** [ดาวน์โหลด Excel] save `QT-000NN.pdf` / `.xlsx`.
    Both carry a **LOT / SN** column so the hospital can reconcile the consignment. **Print** opens the A4 page. The quotation list has
    **Export list (Excel)**. **Send Email** shows a preview modal; click **Send now**.
    Toast: "Sent (simulated) · Hospital replied with PO BKH-PO-26-xxxx". The case is now **Waiting PO**.
@@ -79,7 +85,7 @@ Story: *Two EP ablation cases were done at Phayathai Sriracha this morning. The 
 - **New Usage** (v1 back-office flow): Select Hospital › Scan › PO no. › Review › Confirm.
 - **Master Data**: CRUD for hospitals, doctors, products, suppliers, price lists and users (with hospital assignment).
 
-**Recovery:** if anything goes sideways, use **Reset demo data**. The seed restores C25001 (Waiting PO, QT-2026-001) and
+**Recovery:** if anything goes sideways, use **Reset demo data**. The seed restores C25001 (Waiting PO, QT-00040) and
 the next case number is C25002 again.
 
 ---

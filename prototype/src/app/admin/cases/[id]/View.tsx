@@ -94,6 +94,7 @@ function CaseDetail({ c, d }: { c: Case; d: Data }) {
             <KV label={t("g.doctor")}>{name(doctor, lang)}</KV>
             <KV label={t("g.procedure")}>{proc ? name(proc, lang) : c.procedure ?? "-"}</KV>
             <KV label={t("g.patientHn")}>{c.patientHn ?? "-"}{c.patientAn ? ` · AN ${c.patientAn}` : ""}</KV>
+            <KV label={t("g.patientName")}>{c.patientName ?? "-"}</KV>
             <KV label={t("g.rep")}>
               <span className="flex items-center gap-1.5">
                 <Avatar user={rep} size={20} /> {name(rep, lang)}
@@ -324,7 +325,7 @@ function NextStep({ c, d }: { c: Case; d: Data }) {
   const { t, money } = useFmt();
   const run = useOp();
   const [send, setSend] = useState<"EMAIL" | "LINE" | null>(null);
-  const [decide, setDecide] = useState<{ kind: "q" | "rq"; approve: boolean } | null>(null);
+  const [decide, setDecide] = useState<{ kind: "rq"; approve: boolean } | null>(null);
   const [confirm, setConfirm] = useState<"cancel" | "paid" | null>(null);
   const q = caseQuotation(d, c.id);
   const rq = caseRequisition(d, c.id);
@@ -365,25 +366,6 @@ function NextStep({ c, d }: { c: Case; d: Data }) {
         title = t("a.next.createQtTitle");
         desc = t("a.next.qtRejectedDesc");
         actions = createQt;
-      } else if (q.status === "PENDING_APPROVAL") {
-        tone = "amber";
-        title = t("a.next.awaitApproval");
-        desc = t("a.next.awaitApprovalDesc", { no: q.no, pct: q.discountPct });
-        actions = (
-          <>
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="success" onClick={() => setDecide({ kind: "q", approve: true })}>
-                <CheckCircle2 className="h-4 w-4" /> {t("a.dec.approve")}
-              </Button>
-              <Button variant="outline" className="text-rose-600" onClick={() => setDecide({ kind: "q", approve: false })}>
-                <XCircle className="h-4 w-4" /> {t("a.dec.reject")}
-              </Button>
-            </div>
-            <LinkButton href={`/admin/quotations/${q.id}`} variant="ghost" className="w-full">
-              {t("a.next.viewQt", { no: q.no })}
-            </LinkButton>
-          </>
-        );
       } else {
         title = t("a.next.sendQt");
         desc = t("a.next.sendQtDesc", { no: q.no, total: money(q.total) });
@@ -548,11 +530,10 @@ function NextStep({ c, d }: { c: Case; d: Data }) {
           open
           onClose={() => setDecide(null)}
           approve={decide.approve}
-          refNo={decide.kind === "q" ? q?.no ?? "" : rq?.no ?? ""}
+          refNo={rq?.no ?? ""}
           onSubmit={(note) => {
-            if (decide.kind === "q" && q) run(ops.decideQuotation, q.id, decide.approve, note);
-            if (decide.kind === "rq" && rq) run(ops.decideRequisition, rq.id, decide.approve, note);
-            const ref = decide.kind === "q" ? q?.no ?? "" : rq?.no ?? "";
+            if (rq) run(ops.decideRequisition, rq.id, decide.approve, note);
+            const ref = rq?.no ?? "";
             if (decide.approve) toast.success(t("a.toast.approved", { ref }));
             else toast.warning(t("a.toast.rejected", { ref }));
           }}

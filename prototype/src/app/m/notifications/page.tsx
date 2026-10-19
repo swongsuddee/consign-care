@@ -18,6 +18,7 @@ const ENTITY_OF: Record<string, string> = {
   poRecorded: "PO",
   quotationCreated: "QUOTATION",
   quotationRequested: "QUOTATION",
+  quotationRejected: "QUOTATION",
   approvalRequested: "PR",
   invoiceIssued: "INVOICE",
   requisitionIssued: "REQUISITION",

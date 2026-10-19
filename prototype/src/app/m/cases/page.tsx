@@ -45,7 +45,7 @@ function CasesList() {
     .filter((c) => {
       if (!q) return true;
       const h = d.hospitals.find((x) => x.id === c.hospitalId);
-      return `${c.no} ${h?.name} ${h?.nameTh} ${c.patientHn ?? ""}`.toLowerCase().includes(q.toLowerCase());
+      return `${c.no} ${h?.name} ${h?.nameTh} ${c.patientHn ?? ""} ${c.patientName ?? ""}`.toLowerCase().includes(q.toLowerCase());
     })
     .sort((a, b) => b.caseDate.localeCompare(a.caseDate) || b.no.localeCompare(a.no));
 

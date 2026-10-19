@@ -39,6 +39,7 @@ export const common: Dict = {
   "g.doctor": { th: "แพทย์", en: "Doctor" },
   "g.procedure": { th: "หัตถการ", en: "Procedure" },
   "g.patientHn": { th: "HN ผู้ป่วย", en: "Patient HN" },
+  "g.patientName": { th: "ชื่อ-นามสกุลผู้ป่วย", en: "Patient name" },
   "g.case": { th: "เคส", en: "Case" },
   "g.cases": { th: "เคส", en: "Cases" },
   "g.rep": { th: "ผู้แทนขาย", en: "Sales Rep" },
@@ -119,6 +120,7 @@ export const common: Dict = {
   "step.pending": { th: "รอดำเนินการ", en: "Pending" },
   "step.inProgress": { th: "กำลังดำเนินการ", en: "In progress" },
   "step.waitingPo": { th: "รอ PO จากโรงพยาบาล", en: "Waiting for hospital PO" },
+  "step.waitingSend": { th: "ใบเสนอราคาพร้อมส่ง · รอส่งให้โรงพยาบาล", en: "Quotation ready · not sent yet" },
 
   // quotation status
   "qs.DRAFT": { th: "ฉบับร่าง", en: "Draft" },

@@ -58,7 +58,6 @@ function NewQuotation() {
   const docNo = ops.nextQuotationNo(d);
   const h = d.hospitals.find((x) => x.id === hospitalId);
   const sum = ops.totals(items, discount);
-  const needsApproval = discount > ops.DISCOUNT_APPROVAL_LIMIT;
 
   const candidateCases = d.cases.filter(
     (c) => ["DRAFT", "USAGE_RECORDED", "QUOTED"].includes(c.status) && !caseQuotation(d, c.id) && (!hospitalId || c.hospitalId === hospitalId || c.id === caseId),
@@ -112,8 +111,7 @@ function NewQuotation() {
       discountPct: discount,
       note: note.trim() || undefined,
     });
-    if (q.status === "PENDING_APPROVAL") toast.warning(t("a.qt.savedPending", { no: q.no }), t("a.qt.pendingBanner"));
-    else toast.success(t("a.qt.saved", { no: q.no }));
+    toast.success(t("a.qt.saved", { no: q.no }));
     router.push(`/admin/quotations/${q.id}`);
   };
 
@@ -274,16 +272,6 @@ function NewQuotation() {
               <Field label={`${t("g.discount")} (%)`}>
                 <Input type="number" min={0} max={100} step="0.5" value={discount} onChange={(e) => setDiscount(Math.min(100, Math.max(0, Number(e.target.value))))} />
               </Field>
-              {needsApproval && (
-                <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>
-                    <b>{t("a.qt.pendingBannerTitle")}</b>
-                    <br />
-                    <span className="text-xs">{t("a.qt.pendingBanner")}</span>
-                  </span>
-                </div>
-              )}
               <dl className="space-y-2 border-t border-slate-100 pt-3 text-sm">
                 <Row label={t("g.subtotal")} value={money(sum.subtotal)} />
                 <Row label={`${t("g.discount")} ${discount ? `(${discount}%)` : ""}`} value={`-${money(sum.discount)}`} />

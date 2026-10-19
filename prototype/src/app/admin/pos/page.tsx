@@ -21,7 +21,7 @@ import { ScannerModal } from "@/components/Scanner";
 import { Avatar } from "@/components/PersonaSwitcher";
 import { toast } from "@/components/toast";
 import { Badge, Button, Card, CardHeader, EmptyState, Field, Input, PageLoader, Select } from "@/components/ui";
-import { KV, LinkButton, PageHeader, SearchBox, TableWrap, Td, Th, rowCls } from "@/components/admin/kit";
+import { KV, LinkButton, PageHeader, TableWrap, Td, rowCls, useTable } from "@/components/admin/kit";
 import { useFmt } from "@/lib/format";
 import * as ops from "@/lib/ops";
 import { poSamples } from "@/lib/samples";
@@ -63,7 +63,6 @@ function PosInner() {
   const [mQuotation, setMQuotation] = useState(qParam?.id ?? "");
   const [mAmount, setMAmount] = useState<number>(qParam?.total ?? 0);
   const [mNo, setMNo] = useState("");
-  const [filter, setFilter] = useState("");
 
   // react to ?po= changes while already on this page (e.g. from a notification)
   const poParam = sp.get("po");
@@ -123,14 +122,34 @@ function PosInner() {
     }
   };
 
-  const recorded = d.customerPos.filter((p) => {
-    const k = filter.trim().toLowerCase();
-    if (!k) return true;
-    const q = d.quotations.find((x) => x.id === p.quotationId);
-    const c = d.cases.find((x) => x.id === p.caseId);
-    const h = d.hospitals.find((x) => x.id === p.hospitalId);
-    return [p.poNo, q?.no ?? "", c?.no ?? "", h?.name ?? "", h?.nameTh ?? ""].some((s) => s.toLowerCase().includes(k));
-  });
+  const hosp = (p: CustomerPO) => d.hospitals.find((x) => x.id === p.hospitalId);
+  const qNo = (p: CustomerPO) => d.quotations.find((x) => x.id === p.quotationId)?.no ?? "";
+  const caseNo = (p: CustomerPO) => d.cases.find((x) => x.id === p.caseId)?.no ?? "";
+  const recorders = [...new Set(d.customerPos.map((p) => p.recordedBy))].map((id) => d.users.find((u) => u.id === id)).filter((u) => !!u);
+  const table = useTable(
+    d.customerPos,
+    [
+      { key: "po", label: t("a.pos.poNo"), sort: (p) => p.poNo, text: (p) => p.poNo },
+      { key: "hospital", label: t("g.hospital"), sort: (p) => name(hosp(p), lang), text: (p) => `${hosp(p)?.name ?? ""} ${hosp(p)?.nameTh ?? ""}` },
+      { key: "quotation", label: t("a.pos.quotation"), sort: qNo, text: qNo },
+      { key: "case", label: t("g.case"), sort: caseNo, text: caseNo },
+      { key: "date", label: t("g.date"), sort: (p) => p.date, range: { type: "date", get: (p) => p.date } },
+      { key: "amount", label: t("g.amount"), right: true, sort: (p) => p.amount, range: { type: "number", get: (p) => p.amount, format: (n) => money(n, 0) } },
+      {
+        key: "method",
+        label: t("a.pos.method"),
+        sort: (p) => p.method,
+        options: [
+          { value: "SCAN", label: t("src.SCAN") },
+          { value: "TYPED", label: t("a.pos.typed") },
+        ],
+        value: (p) => p.method,
+      },
+      { key: "by", label: t("a.pos.recordedBy"), sort: (p) => name(d.users.find((u) => u.id === p.recordedBy), lang), options: recorders.map((u) => ({ value: u.id, label: name(u, lang) })), value: (p) => p.recordedBy, multi: true },
+    ],
+    { key: "date", dir: "desc" },
+  );
+  const recorded = table.rows;
 
   return (
     <div>
@@ -281,24 +300,10 @@ function PosInner() {
             <h3 className="font-semibold text-slate-800">{t("a.pos.recorded")}</h3>
             <p className="text-xs text-slate-500">{t("a.pos.recordedSub", { n: d.customerPos.length })}</p>
           </div>
-          <SearchBox value={filter} onChange={setFilter} placeholder={t("g.search")} icon={<Search className="h-4 w-4" />} className="sm:w-72" />
         </div>
-        {recorded.length === 0 ? (
-          <EmptyState title={t("g.noResults")} />
-        ) : (
-          <TableWrap maxH="480px">
-            <thead>
-              <tr>
-                <Th>{t("a.pos.poNo")}</Th>
-                <Th>{t("g.hospital")}</Th>
-                <Th>{t("a.pos.quotation")}</Th>
-                <Th>{t("g.case")}</Th>
-                <Th>{t("g.date")}</Th>
-                <Th right>{t("g.amount")}</Th>
-                <Th>{t("a.pos.method")}</Th>
-                <Th>{t("a.pos.recordedBy")}</Th>
-              </tr>
-            </thead>
+        {table.summary}
+        <TableWrap maxH="520px" dense>
+            <thead>{table.head}</thead>
             <tbody>
               {recorded.map((p) => {
                 const q = d.quotations.find((x) => x.id === p.quotationId);
@@ -341,7 +346,7 @@ function PosInner() {
               })}
             </tbody>
           </TableWrap>
-        )}
+          {recorded.length === 0 && <EmptyState title={t("g.noResults")} />}
       </Card>
 
       <ScannerModal

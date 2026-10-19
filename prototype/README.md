@@ -5,7 +5,8 @@ platform for a Thai medical-device distributor. It includes a sales-rep mobile a
 (`/admin`), a presentation landing page (`/`) and the project slide deck
 (`/presentation/index.html`, plain HTML in `public/presentation`).
 
-> **All data is mock data.** It is seeded from `src/lib/seed.ts` and persisted in the browser's `localStorage`.
+> **All data is mock data.** It is seeded from `src/lib/seed.ts` and persisted in the browser's `localStorage`. Patients (names, HN, AN) are
+> fictional, generated per case number.
 > Data lives in the browser (localStorage). Email, LINE, SSO and the hospital's PO reply are simulated.
 >
 > **Reading usage photos** works three ways:
@@ -56,7 +57,7 @@ What differs on the static site:
 | Area | Routes |
 |---|---|
 | Presentation | `/` story, value pillars, case journey, role switcher, demo path |
-| Mobile (sales rep) | `/m` login · `/m/home` · `/m/accounts` · `/m/accounts/[id]` · `/m/cases` · `/m/cases/new` · `/m/cases/new/review` (OCR) · `/m/cases/[id]` (tracking) · `/m/usage` · `/m/scan` · `/m/products/[id]` · `/m/notifications` · `/m/settings` |
+| Mobile (sales rep) | `/m` login · `/m/home` · `/m/accounts` · `/m/accounts/[id]` · `/m/cases` · `/m/cases/new` (scan / upload / manual) · `/m/cases/new/manual` · `/m/cases/new/review` (patient details, one page per patient) · `/m/cases/[id]` (tracking) · `/m/usage` · `/m/scan` · `/m/products/[id]` · `/m/notifications` · `/m/settings` |
 | Back-office | `/admin` dashboard · cases · usage/new (v1 New Usage) · quotations · pos · requisitions · purchase-requests · billing · inventory · approvals · master · activity · settings |
 | Documents | `/print/{quotation,pr,invoice,requisition}/[id]` A4 Thai document → Print / Save as PDF (+ Excel) |
 

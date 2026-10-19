@@ -90,7 +90,6 @@ export function revenueWaitingBilling(d: Data) {
 
 export function pendingApprovals(d: Data) {
   return {
-    quotations: d.quotations.filter((q) => q.status === "PENDING_APPROVAL"),
     requisitions: d.requisitions.filter((r) => r.status === "SUBMITTED"),
     prs: d.purchaseRequests.filter((r) => r.status === "SUBMITTED"),
   };

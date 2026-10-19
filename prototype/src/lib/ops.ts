@@ -59,9 +59,10 @@ function maxSeq(nos: string[], re: RegExp): number {
 export function nextCaseNo(d: Data) {
   return `C${maxSeq(d.cases.map((c) => c.no), /^C(\d+)$/) + 1}`;
 }
+/** Quotations run one sequence from QT-00001, never reset by year. */
 export function nextQuotationNo(d: Data) {
-  const n = maxSeq(d.quotations.map((q) => q.no), /^QT-2026-(\d+)$/) + 1;
-  return `QT-2026-${String(n).padStart(3, "0")}`;
+  const n = maxSeq(d.quotations.map((q) => q.no), /^QT-(\d+)$/) + 1;
+  return `QT-${String(n).padStart(5, "0")}`;
 }
 export function nextRequisitionNo(d: Data) {
   const n = maxSeq(d.requisitions.map((q) => q.no), /^RQ-2026-(\d+)$/) + 1;
@@ -275,6 +276,7 @@ export function createCase(
     repId: input.repId ?? actor,
     doctorId: input.doctorId || undefined,
     patientHn: input.patientHn || undefined,
+    patientName: input.patientName || undefined,
     patientAn: input.patientAn || undefined,
     procedure: input.procedure || undefined,
     caseDate: input.caseDate,
@@ -287,9 +289,28 @@ export function createCase(
   log(d, actor, "caseCreated", "CASE", c.id, c.no, c.hospitalId, at);
   if (input.items.length) {
     recordUsage(d, actor, c, input.items, at);
+    quoteCase(d, actor, c, at);
   }
   if (input.poNo) c.note = `PO: ${input.poNo}`;
   return c;
+}
+
+/**
+ * Quotations need no approval, so one is made the moment usage is recorded: every item used, at the hospital's
+ * contract price, no discount. It is approved on creation and the case moves to QUOTED, ready to send.
+ */
+export function quoteCase(d: Data, actor: string, c: Case, at = nowIso()) {
+  if (d.quotations.some((q) => q.caseId === c.id && q.status !== "REJECTED")) return;
+  const qty = new Map<string, number>();
+  for (const u of d.usage) if (u.caseId === c.id) qty.set(u.productId, (qty.get(u.productId) ?? 0) + u.qty);
+  if (!qty.size) return;
+  const items: DocItem[] = [...qty].map(([productId, n]) => ({
+    productId,
+    unit: d.products.find((p) => p.id === productId)?.unit ?? "piece",
+    qty: n,
+    unitPrice: priceFor(d, c.hospitalId, productId),
+  }));
+  return createQuotation(d, actor, { caseId: c.id, hospitalId: c.hospitalId, date: at.slice(0, 10), items, discountPct: 0 });
 }
 
 export function recordUsage(d: Data, actor: string, c: Case, items: NewUsageLine[], at = nowIso()) {
@@ -328,7 +349,7 @@ export function updateCase(
   d: Data,
   actor: string,
   caseId: string,
-  patch: Partial<Pick<Case, "doctorId" | "patientHn" | "procedure" | "caseDate" | "note">>,
+  patch: Partial<Pick<Case, "doctorId" | "patientHn" | "patientName" | "procedure" | "caseDate" | "note">>,
 ) {
   const c = caseOf(d, caseId);
   if (!c) return;
@@ -346,7 +367,6 @@ export function cancelCase(d: Data, actor: string, caseId: string) {
 /* ------------------------------------------------------------------ quotation */
 
 export const VAT_RATE = 0.07;
-export const DISCOUNT_APPROVAL_LIMIT = 10;
 
 export function totals(items: DocItem[], discountPct: number) {
   const subtotal = items.reduce((s, i) => s + i.qty * i.unitPrice, 0);
@@ -370,7 +390,6 @@ export function createQuotation(
   },
 ): Quotation {
   const t = totals(input.items, input.discountPct);
-  const needsApproval = input.discountPct > DISCOUNT_APPROVAL_LIMIT;
   const q: Quotation = {
     id: uid("qt"),
     no: nextQuotationNo(d),
@@ -384,7 +403,7 @@ export function createQuotation(
     discount: t.discount,
     vat: t.vat,
     total: t.total,
-    status: needsApproval ? "PENDING_APPROVAL" : "DRAFT",
+    status: "APPROVED", // no approval step: every quotation is approved when it is created
     createdBy: actor,
     note: input.note,
   };
@@ -394,10 +413,6 @@ export function createQuotation(
   if (c && ["DRAFT", "USAGE_RECORDED"].includes(c.status)) {
     setCaseStatus(c, "QUOTED");
     notify(d, c.repId, "quotationCreated", c.no, `/m/cases/${c.id}`, c.hospitalId);
-  }
-  if (needsApproval) {
-    log(d, actor, "approvalRequested", "QUOTATION", q.id, q.no, q.hospitalId);
-    notify(d, "u-somchai", "approvalRequested", q.no, `/admin/approvals`, q.hospitalId);
   }
   return q;
 }
@@ -409,21 +424,28 @@ export function approverFor(d: Data, actor: string): string {
   return d.users.find((u) => u.role === "MANAGER")?.id ?? actor;
 }
 
-export function decideQuotation(d: Data, by: string, id: string, approve: boolean, note?: string) {
+/** Only an admin can reject a quotation, and only before the hospital accepts it with a PO. */
+export function canForceReject(d: Data, actor: string, q: Quotation) {
+  return d.users.find((u) => u.id === actor)?.role === "ADMIN" && ["APPROVED", "SENT"].includes(q.status);
+}
+
+/**
+ * An admin overrides the automatic approval. The hospital's pending PO reply for it is dropped, and the case goes back
+ * to QUOTED with no live quotation, so a new one can be issued.
+ */
+export function forceRejectQuotation(d: Data, actor: string, id: string, reason: string) {
   const q = d.quotations.find((x) => x.id === id);
-  if (!q || q.status !== "PENDING_APPROVAL") return;
-  const actor = approverFor(d, by);
-  q.status = approve ? "APPROVED" : "REJECTED";
-  d.approvals.unshift({
-    id: uid("apv"),
-    entity: "QUOTATION",
-    entityId: q.id,
-    approverId: actor,
-    decision: approve ? "APPROVED" : "REJECTED",
-    note,
-    at: nowIso(),
-  });
-  log(d, actor, approve ? "quotationApproved" : "quotationRejected", "QUOTATION", q.id, q.no, q.hospitalId);
+  if (!q || !canForceReject(d, actor, q)) return;
+  const at = nowIso();
+  q.status = "REJECTED";
+  q.rejected = { by: actor, at, reason };
+  d.incomingPos = d.incomingPos.filter((p) => p.quotationNo !== q.no);
+  log(d, actor, "quotationRejected", "QUOTATION", q.id, q.no, q.hospitalId, at);
+  const c = caseOf(d, q.caseId);
+  if (c) {
+    if (c.status === "WAITING_PO") setCaseStatus(c, "QUOTED", at);
+    notify(d, c.repId, "quotationRejected", q.no, `/m/cases/${c.id}`, c.hospitalId, at);
+  }
 }
 
 const PO_PREFIX: Record<string, string> = {
@@ -441,7 +463,7 @@ export function poNumberFor(hospitalId: string, quotationNo: string) {
 
 export function sendQuotation(d: Data, actor: string, id: string, channel: "EMAIL" | "LINE"): boolean {
   const q = d.quotations.find((x) => x.id === id);
-  if (!q || !["DRAFT", "APPROVED", "SENT"].includes(q.status)) return false;
+  if (!q || !["APPROVED", "SENT"].includes(q.status)) return false;
   q.status = "SENT";
   q.sentVia = Array.from(new Set([...(q.sentVia ?? []), channel]));
   log(d, actor, channel === "EMAIL" ? "quotationEmailed" : "quotationLined", "QUOTATION", q.id, q.no, q.hospitalId);
