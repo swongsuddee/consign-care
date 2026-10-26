@@ -1,6 +1,7 @@
 "use client";
 
-import { parseSticker } from "./selectors";
+import { flags } from "./flags";
+import { groupByLayout, groupByPatient, type SheetCode } from "./patients";
 import type { CasePhoto } from "./types";
 import { asset, STATIC_SITE } from "./base";
 
@@ -45,8 +46,6 @@ export interface Extraction {
 
 /** Full-resolution originals for this session (not persisted: localStorage keeps a small copy). */
 export const originals = new Map<string, Blob>();
-
-const item = (raw: string, confidence = 0.97): ExtractedItem => ({ raw, confidence, ...parseSticker(raw) });
 
 async function photoBlob(p: CasePhoto): Promise<Blob | undefined> {
   const o = originals.get(p.id);
@@ -99,14 +98,14 @@ function zxing() {
   return zxingReady;
 }
 
-/** Every barcode in an image, top to bottom, decoded on the device. */
-export async function decodeBarcodes(blob: Blob): Promise<{ text: string; y: number }[]> {
+/** Every barcode in an image, top to bottom, decoded on the device, with where it sits in the photo. */
+export async function decodeBarcodes(blob: Blob): Promise<SheetCode[]> {
   const { readBarcodes } = await zxing();
   const bmp = await createImageBitmap(blob);
   // a shared or downsized photo (~1000 px wide) leaves sticker bars about 1 px wide, too thin to read;
   // reading it again enlarged recovers most of them, so small photos are read at several sizes and the results merged
   const scales = Math.max(bmp.width, bmp.height) < 2000 ? [1, 2.5, 3] : [1];
-  const out: { text: string; y: number }[] = [];
+  const out: SheetCode[] = [];
   for (const s of scales) {
     const c = document.createElement("canvas");
     c.width = Math.round(bmp.width * s);
@@ -121,33 +120,23 @@ export async function decodeBarcodes(blob: Blob): Promise<{ text: string; y: num
     });
     for (const r of found) {
       const text = r.text.trim();
-      const y = (r.position.topLeft.y + r.position.bottomLeft.y) / 2 / s;
-      // the same sticker read at another size: same text at about the same height
-      if (text && !out.some((o) => o.text === text && Math.abs(o.y - y) < 20)) out.push({ text, y });
+      const { topLeft: tl, topRight: tr, bottomLeft: bl, bottomRight: br } = r.position;
+      const x = (tl.x + tr.x + bl.x + br.x) / 4 / s;
+      const y = (tl.y + tr.y + bl.y + br.y) / 4 / s;
+      const w = Math.hypot(tr.x - tl.x, tr.y - tl.y) / s;
+      const h = Math.hypot(bl.x - tl.x, bl.y - tl.y) / s;
+      // the same sticker read at another size: same text at about the same place
+      if (text && !out.some((o) => o.text === text && Math.abs(o.y - y) < 20 && Math.abs(o.x - x) < 40)) out.push({ text, x, y, w, h });
     }
   }
   bmp.close();
   return out.sort((a, b) => a.y - b.y);
 }
 
-/**
- * Decode every barcode in the photo, then split into patients where the vertical gap between stickers jumps,
- * or where a REF repeats (one patient does not get the same device twice; this also holds when unread stickers
- * leave gaps of every size).
- */
+/** Decode every barcode in the photo, then split it into patients and their equipment (lib/patients.ts; flags.patientBarcodes). */
 async function viaBarcodes(blob: Blob): Promise<Extraction> {
-  const rows = await decodeBarcodes(blob);
-  const gaps = rows.slice(1).map((r, i) => r.y - rows[i].y);
-  const median = [...gaps].sort((a, b) => a - b)[Math.floor(gaps.length / 2)] ?? 0;
-  const patients: ExtractedPatient[] = [];
-  rows.forEach((r, i) => {
-    const it = item(r.text, 1);
-    const cur = patients[patients.length - 1];
-    const repeat = cur?.items.some((x) => x.ref && x.ref === it.ref);
-    if (!cur || repeat || (rows.length >= 3 && gaps[i - 1] > median * 1.8)) patients.push({ items: [] });
-    patients[patients.length - 1].items.push(it);
-  });
-  return { engine: rows.length ? "barcode" : "none", patients };
+  const codes = await decodeBarcodes(blob);
+  return { engine: codes.length ? "barcode" : "none", patients: flags.patientBarcodes ? groupByPatient(codes) : groupByLayout(codes) };
 }
 
 /** Combine the readings of several photos into one: patients in photo order, first hospital and date found. */

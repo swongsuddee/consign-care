@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
+import { flags } from "@/lib/flags";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,10 +33,14 @@ const Sheet = z.object({
   ),
 });
 
+// behind flags.patientBarcodes: patient stickers with an HN / AN barcode, sheets laid out in columns
+const PATIENT_BARCODES = flags.patientBarcodes ? " A patient sticker may also carry a barcode of its HN / AN." : "";
+const IN_COLUMN = flags.patientBarcodes ? ", in the same column when stickers are laid out in more than one column" : "";
+
 const SYSTEM = `You read consignment usage sheets from Thai hospitals for a medical-device distributor.
-A sheet has one or more patient stickers (HN, AN, patient name, age, "doctor code : doctor name").
+A sheet has one or more patient stickers (HN, AN, patient name, age, "doctor code : doctor name").${PATIENT_BARCODES}
 Under each patient sticker are equipment barcode stickers; the text printed under each barcode is "REF LOT SERIAL".
-Every equipment sticker belongs to the nearest patient sticker above it.
+Every equipment sticker belongs to the nearest patient sticker above it${IN_COLUMN}.
 The hospital name and date may be handwritten anywhere on the sheet.
 Return only what is printed or written. Do not return patient names, ages or dates of birth.
 If a line is partly torn or hidden, return your best reading and lower its confidence.`;

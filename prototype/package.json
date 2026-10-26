@@ -8,7 +8,8 @@
     "start": "next start",
     "build:pages": "node scripts/build-pages.mjs",
     "preview:pages": "npx serve out -l 3200",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
@@ -36,6 +37,7 @@
     "eslint-config-next": "15.5.25",
     "postcss": "^8.5.30",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

@@ -14,8 +14,13 @@ platform for a Thai medical-device distributor. It includes a sales-rep mobile a
 >    (`claude-opus-5-5`, structured output). It reads the hospital, the date, each patient sticker (HN, AN, doctor code) and the
 >    "REF LOT SERIAL" text under every barcode. It never returns patient names or birth dates.
 > 2. **On the device:** without a key, barcodes are decoded in the browser (zxing-wasm, self-hosted wasm in `public/wasm`) and
->    grouped into patients by the gaps between sticker rows, or where a REF repeats. A photo under 2000 px is read again at
->    2.5× and 3×, which recovers most stickers in a ~1000 px shot. The longest codes still need the full-size photo or the AI.
+>    split into patients. **Behind the `patientBarcodes` flag** (`src/lib/flags.ts`, off by default; build with
+>    `NEXT_PUBLIC_FLAG_PATIENT_BARCODES=1` to turn it on), `groupByPatient` (`src/lib/patients.ts`) handles several patients
+>    in one photo: each patient
+>    sticker's HN / AN barcode (`HN:65-20026 AN:69-19920`, `HN-640112`, `65-20026`, or HN and AN as two barcodes) starts a
+>    patient, and the equipment stickers after it, column by column and top to bottom, are that patient's. Without
+>    patient barcodes, or with the flag off, it splits by the gaps between sticker rows and repeated REFs. A photo under 2000 px is read again
+>    at 2.5× and 3×, which recovers most stickers in a ~1000 px shot. `npm test` runs the grouping tests.
 > 3. **Mock data:** with no camera, **Create mock data** on New Case makes 1–3 fictional patients with equipment from the
 >    hospital's real stock (`src/lib/mock.ts`) and opens them on the patient pages, so the demo works offline.
 > Use **Reset demo data** (mobile side panel, mobile Settings, or `/admin/settings`) to restore the seed.
