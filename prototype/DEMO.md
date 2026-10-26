@@ -24,23 +24,22 @@ Story: *Two EP ablation cases were done at Phayathai Sriracha this morning. The 
      the equipment, picked from the hospital's consignment stock (**Select** [เลือกรายการ], − / + capped at what is on
      hand) or scanned. **Save case** [บันทึกเคส] creates the case straight away.
 
-   Photos go to the patient details page (step 4). For the demo on a laptop, tap the sample **Real sheet · 2 patients
-   (Phayathai Sriracha)** [ใบบันทึกจริง · 2 ผู้ป่วย] under "No camera?". It is the hospital's real usage sheet with
-   patient names and birth dates redacted. A half-finished case is kept as a draft; the choice screen offers to continue it.
-4. Patient details: the patient count comes first, **2 patients · 12 items** [2 ผู้ป่วย · 12 รายการ], with the
+   Photos go to the patient details page (step 4). For the demo on a laptop, tap **Create mock data**
+   [สร้างข้อมูลจำลอง] under "No camera?". It makes 1–3 fictional patients (surname ทดสอบ) with equipment taken from
+   the hospital's real consignment stock, different each time, and opens them as if a photo had been read. A
+   half-finished case is kept as a draft; the choice screen offers to continue it.
+4. Patient details: the patient count comes first (e.g. **2 patients · 6 items** [2 ผู้ป่วย · 6 รายการ]), with the
    hospital, the date and the list of patients. A photo taken with the camera can be saved to the phone's gallery from
-   here (**Save to gallery** [บันทึกลงคลังภาพ] opens the share sheet). Then **Next · Patient 1/2** shows one page per
-   patient; − / + changes a quantity. The hospital (*Phayathai Sriracha*) and the date (17 Oct 2026)
-   were read from the handwriting. Each patient page has HN, AN and name-surname (fictional details stand in for the redacted ones on the sample) and doctor **1152**. Every sticker shows
-   **REF · LOT · SN**: the text printed under each barcode is "REF LOT SERIAL". One EnSite line is flagged **Check** because
-   its sticker is torn on the sheet. On the last patient click **Confirm · 2 cases · 12 items** [ยืนยัน · 2 เคส · 12 รายการ].
-5. Two cases are created, **C25002** and **C25003**, one per patient, and the Phayathai Sriracha consignment stock is deducted.
-   Open C25002: each line shows its LOT and SN.
-   *(Optional: **Scan** tab › Simulate scan a sticker such as "402570 11325569 184797" › REF / LOT / SN.)*
+   here (**Save to gallery** [บันทึกลงคลังภาพ] opens the share sheet). Then **Next · Patient 1/n** shows one page per
+   patient: HN, AN, name-surname, doctor, and the items as **REF · LOT · SN** with − / +. An item read with low
+   confidence is flagged **Check**. On the last patient click **Confirm · n cases** [ยืนยัน · n เคส].
+5. One case is created per patient (C25002, C25003 …) and the hospital's consignment stock is deducted. Each case gets
+   its quotation automatically. Open C25002: each line shows its LOT and SN.
+   *(Optional: **Scan** tab › Simulate scan a sticker such as "410105 21004417 560123" › REF / LOT / SN.)*
 
 > **Reading for real:** without a server key the sample uses its pre-read transcription. A photo you upload is decoded **on the
-> device** when its barcodes are sharp enough (a close-up, or a scanner-quality image). IMG_0027 as sent is too low-resolution
-> for that, so the app says so. Set `ANTHROPIC_API_KEY` on the server to have Claude read the printed text and patient stickers
+> device** when its barcodes are sharp enough (a close-up, or a scanner-quality image); a small or blurry photo may not
+> decode, and the app says so. Set `ANTHROPIC_API_KEY` on the server to have Claude read the printed text and patient stickers
 > from any photo; see README.
 
 ### 2. Sales admin quotes and emails (Tab B, ~1 min)
@@ -96,5 +95,5 @@ the next case number is C25002 again.
   Inside the overlay: **Download PDF**, **Download Excel**, **Print**; close with ✕, a click outside, or Esc.
 - **Barcode from a picture.** Scan screen › **เลือกจากคลังภาพ / From gallery** decodes every barcode in a chosen image
   (one: shown straight away; several: pick one). The **Search** tab has 📷 camera and 🖼 gallery buttons next to the field;
-  a decoded or typed sticker such as `IBI-81102 11420679 180874` finds its product directly.
+  a decoded or typed sticker such as `ABL-20511 21005906 560158` finds its product directly.
   On **New Case › Select › Scan** a gallery image with several stickers adds them all.

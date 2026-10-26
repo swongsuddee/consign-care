@@ -18,7 +18,7 @@ const Sheet = z.object({
     z.object({
       hn: z.string().nullable().describe("HN from the patient sticker, e.g. 12-34567"),
       an: z.string().nullable().describe("AN from the patient sticker"),
-      doctorCode: z.string().nullable().describe("Doctor code before the colon on the patient sticker, e.g. 1152"),
+      doctorCode: z.string().nullable().describe("Doctor code before the colon on the patient sticker, e.g. 2048"),
       items: z.array(
         z.object({
           text: z.string().describe("The full line printed under the barcode"),

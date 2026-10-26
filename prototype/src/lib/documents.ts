@@ -6,7 +6,7 @@ import type { Data } from "./types";
 
 const unitTh = (u: string) => translate("th", `unit.${u}`);
 
-/** "LOT 11411683 · SN 182998" for each unit of a product used in the case */
+/** "LOT 21005803 · SN 560113" for each unit of a product used in the case */
 function lotSerials(d: Data, caseId: string, productId: string) {
   return d.usage
     .filter((u) => u.caseId === caseId && u.productId === productId)

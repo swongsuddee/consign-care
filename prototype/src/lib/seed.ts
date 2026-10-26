@@ -11,7 +11,7 @@ import {
   WAREHOUSE,
 } from "./ops";
 
-export const DATA_VERSION = 9;
+export const DATA_VERSION = 10;
 
 /* ---------------------------------------------------------------- mock patients (fictional) */
 
@@ -71,8 +71,8 @@ const doctors: Data["doctors"] = [
   { id: "doc-somchai", name: "Dr. Somchai", nameTh: "นพ.สมชาย", specialty: "Orthopedics", hospitalIds: ["h-bkk", "h-bmr", "h-smv", "h-pyt"] },
   { id: "doc-anan", name: "Dr. Anan", nameTh: "นพ.อนันต์", specialty: "Sports Medicine", hospitalIds: ["h-bkk", "h-bmr", "h-smv", "h-pyt"] },
   { id: "doc-krit", name: "Dr. Krit", nameTh: "นพ.กฤษ", specialty: "Cardiology", hospitalIds: ["h-bkk", "h-bmr", "h-smv", "h-pyt"] },
-  // Doctor code 1152 as printed on the hospital's patient sticker; the name is filled in from the hospital's doctor list.
-  { id: "doc-1152", name: "Doctor #1152", nameTh: "แพทย์รหัส 1152", specialty: "Cardiac Electrophysiology", hospitalIds: ["h-pys"], code: "1152" },
+  // Doctor code 2048 as printed on the hospital's patient sticker; the name is filled in from the hospital's doctor list.
+  { id: "doc-2048", name: "Doctor #2048", nameTh: "แพทย์รหัส 2048", specialty: "Cardiac Electrophysiology", hospitalIds: ["h-pys"], code: "2048" },
 ];
 
 const procedures: Data["procedures"] = [
@@ -101,12 +101,12 @@ const products: Product[] = [
   { id: "p-bl", ref: "BL-202", name: "Balloon ABC", category: "Cardiology", unit: "piece", gtin: "08845210002028", listPrice: 21000, reorderPoint: 10, supplierId: "sup-cardio" },
   // Electrophysiology items read from the Phayathai Sriracha usage sheet (sticker = REF LOT SERIAL).
   // Names and prices are placeholders until the real catalogue is loaded.
-  { id: "p-ensite", ref: "ENSITE-SEK-5-I-01", name: "EnSite Sensor Enabled Kit", category: "Electrophysiology", unit: "set", gtin: "ENSITE-SEK-5-I-01", listPrice: 48000, reorderPoint: 4, supplierId: "sup-ep" },
-  { id: "p-402570", ref: "402570", name: "EP Diagnostic Catheter 402570", category: "Electrophysiology", unit: "piece", gtin: "402570", listPrice: 36000, reorderPoint: 4, supplierId: "sup-ep" },
-  { id: "p-402811", ref: "402811", name: "EP Diagnostic Catheter 402811", category: "Electrophysiology", unit: "piece", gtin: "402811", listPrice: 38500, reorderPoint: 4, supplierId: "sup-ep" },
-  { id: "p-401980", ref: "401980", name: "Steerable Sheath 401980", category: "Electrophysiology", unit: "piece", gtin: "401980", listPrice: 29500, reorderPoint: 4, supplierId: "sup-ep" },
-  { id: "p-ibi", ref: "IBI-81102", name: "Ablation Catheter IBI-81102", category: "Electrophysiology", unit: "piece", gtin: "IBI-81102", listPrice: 89000, reorderPoint: 4, supplierId: "sup-ep" },
-  { id: "p-401436", ref: "401436", name: "Introducer Set 401436", category: "Electrophysiology", unit: "piece", gtin: "401436", listPrice: 6800, reorderPoint: 6, supplierId: "sup-ep" },
+  { id: "p-ep-map", ref: "MAP-KIT-3-01", name: "Mapping Sensor Kit", category: "Electrophysiology", unit: "set", gtin: "MAP-KIT-3-01", listPrice: 48000, reorderPoint: 4, supplierId: "sup-ep" },
+  { id: "p-ep-dx1", ref: "410105", name: "EP Diagnostic Catheter 410105", category: "Electrophysiology", unit: "piece", gtin: "410105", listPrice: 36000, reorderPoint: 4, supplierId: "sup-ep" },
+  { id: "p-ep-dx2", ref: "410212", name: "EP Diagnostic Catheter 410212", category: "Electrophysiology", unit: "piece", gtin: "410212", listPrice: 38500, reorderPoint: 4, supplierId: "sup-ep" },
+  { id: "p-ep-sheath", ref: "410320", name: "Steerable Sheath 410320", category: "Electrophysiology", unit: "piece", gtin: "410320", listPrice: 29500, reorderPoint: 4, supplierId: "sup-ep" },
+  { id: "p-ep-abl", ref: "ABL-20511", name: "Ablation Catheter ABL-20511", category: "Electrophysiology", unit: "piece", gtin: "ABL-20511", listPrice: 89000, reorderPoint: 4, supplierId: "sup-ep" },
+  { id: "p-ep-intro", ref: "410438", name: "Introducer Set 410438", category: "Electrophysiology", unit: "piece", gtin: "410438", listPrice: 6800, reorderPoint: 6, supplierId: "sup-ep" },
   { id: "p-pc", ref: "1245678980123", name: "Paracetamol 500 mg", category: "Pharmaceutical", unit: "pcs", gtin: "1245678980123", listPrice: 1.5, reorderPoint: 1000, supplierId: "sup-abc" },
 ];
 
@@ -145,17 +145,17 @@ const LOTS: Record<string, [string, string, number, number][]> = {
   "p-as": [["AS2407", "2028-07-31", 25, 6]],
   "p-ct": [["CT2405", "2027-05-31", 18, 6]],
   "p-bl": [["BL2311", "2027-01-05", 0, 3], ["BL2506", "2028-06-30", 4, 3]],
-  "p-ensite": [["11411683", "2028-01-31", 4, 4]],
-  "p-402570": [["11325569", "2027-11-30", 4, 4]],
-  "p-402811": [["11380356", "2027-12-31", 4, 4]],
-  "p-401980": [["11445151", "2028-02-29", 4, 4]],
-  "p-ibi": [["11420679", "2028-01-31", 2, 4]],
-  "p-401436": [["11534387", "2028-05-31", 10, 6]],
+  "p-ep-map": [["21005803", "2028-01-31", 4, 4]],
+  "p-ep-dx1": [["21004417", "2027-11-30", 4, 4]],
+  "p-ep-dx2": [["21005582", "2027-12-31", 4, 4]],
+  "p-ep-sheath": [["21006139", "2028-02-29", 4, 4]],
+  "p-ep-abl": [["21005906", "2028-01-31", 2, 4]],
+  "p-ep-intro": [["21007264", "2028-05-31", 10, 6]],
   "p-pc": [["LOT2264A", "2027-06-30", 550, 0]],
 };
 
 const EP_ONLY: Record<string, string> = Object.fromEntries(
-  ["p-ensite", "p-402570", "p-402811", "p-401980", "p-ibi", "p-401436"].map((id) => [id, "h-pys"]),
+  ["p-ep-map", "p-ep-dx1", "p-ep-dx2", "p-ep-sheath", "p-ep-abl", "p-ep-intro"].map((id) => [id, "h-pys"]),
 );
 
 /* ---------------------------------------------------------------- cases */
@@ -221,7 +221,7 @@ export const OCR_TEMPLATES: Record<string, [string, number][]> = {
   shoulder: [["p-sa", 3], ["p-cn", 1], ["p-st", 1], ["p-as", 1]],
   acl: [["p-se", 1], ["p-sa", 2], ["p-cn", 1], ["p-st", 1], ["p-as", 1]],
   pci: [["p-ct", 1], ["p-bl", 2], ["p-st", 1]],
-  ep: [["p-ensite", 1], ["p-402570", 1], ["p-402811", 1], ["p-401980", 1], ["p-ibi", 1], ["p-401436", 1]],
+  ep: [["p-ep-map", 1], ["p-ep-dx1", 1], ["p-ep-dx2", 1], ["p-ep-sheath", 1], ["p-ep-abl", 1], ["p-ep-intro", 1]],
 };
 
 const ORDER: CaseStatus[] = ["DRAFT", "USAGE_RECORDED", "QUOTED", "WAITING_PO", "PO_RECEIVED", "REQUISITIONED", "BILLED", "CLOSED"];

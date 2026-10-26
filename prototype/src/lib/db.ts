@@ -99,7 +99,11 @@ export function readMeta(): Meta | null {
 export function load(): Data | null {
   const meta = readMeta();
   if (!meta) return migrateLegacy();
-  if (meta.version !== DATA_VERSION) return null;
+  if (meta.version !== DATA_VERSION) {
+    // a new data version also drops the New Case draft: its photos and products belong to the old data
+    del(DRAFT_KEY);
+    return null;
+  }
   const d = { version: DATA_VERSION } as Data;
   for (const t of TABLES) {
     const raw = get(NS + t);

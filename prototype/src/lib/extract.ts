@@ -26,12 +26,14 @@ export interface ExtractedItem {
 export interface ExtractedPatient {
   hn?: string;
   an?: string;
-  /** only the bundled demo sample carries a (fictional) name; the photo readers never return one */
+  /** only mock data carries a (fictional) name and doctor; the photo readers never return a name */
   name?: string;
+  doctorId?: string;
   doctorCode?: string;
   items: ExtractedItem[];
 }
-export type Engine = "ai" | "barcode" | "sample" | "none";
+/** how a reading was made; "mock" is made-up demo data (lib/mock.ts), "sample" a drawn sample sheet */
+export type Engine = "ai" | "barcode" | "sample" | "mock" | "none";
 export interface Extraction {
   engine: Engine;
   hospitalName?: string;
@@ -40,52 +42,11 @@ export interface Extraction {
   model?: string;
 }
 
-export const SAMPLE_EP = "/samples/ep-usage-sheet.jpg";
 
 /** Full-resolution originals for this session (not persisted: localStorage keeps a small copy). */
 export const originals = new Map<string, Blob>();
 
 const item = (raw: string, confidence = 0.97): ExtractedItem => ({ raw, confidence, ...parseSticker(raw) });
-
-/**
- * Transcription of the bundled sample. The real patient details were redacted from the image, so the demo fills in
- * fictional ones (HN, AN, name) to show the patient pages complete.
- */
-const SAMPLE: Extraction = {
-  engine: "sample",
-  hospitalName: "Phayathai Sriracha",
-  date: "2026-10-17",
-  patients: [
-    {
-      hn: "HN-640112",
-      an: "69-10231",
-      name: "นางสาวพิมพ์ชนก ทดสอบ",
-      doctorCode: "1152",
-      items: [
-        item("ENSITE-SEK-5-I-01 11411683 182998"),
-        item("402570 11325569 184796"),
-        item("402811 11380356 188396"),
-        item("401980 11445151 186684"),
-        item("IBI-81102 11420679 180874"),
-        item("401436 11534387 193082"),
-      ],
-    },
-    {
-      hn: "HN-580437",
-      an: "69-10232",
-      name: "นายวีระพงษ์ ทดสอบ",
-      doctorCode: "1152",
-      items: [
-        item("401436 11534387 193083"),
-        item("ENSITE-SEK-5-I-01 11411683 182999", 0.86), // first letters torn on the sheet
-        item("IBI-81102 11420679 180936"),
-        item("401980 11445151 186682"),
-        item("402811 11380356 190254"),
-        item("402570 11325569 184795"),
-      ],
-    },
-  ],
-};
 
 async function photoBlob(p: CasePhoto): Promise<Blob | undefined> {
   const o = originals.get(p.id);
@@ -200,13 +161,12 @@ export function merge(list: Extraction[]): Extraction {
     out.model ??= r.model;
     out.patients.push(...r.patients.filter((x) => x.items.length));
   }
-  out.engine = engines.has("ai") ? "ai" : engines.has("barcode") ? "barcode" : engines.has("sample") ? "sample" : "none";
+  out.engine = engines.has("ai") ? "ai" : engines.has("barcode") ? "barcode" : engines.has("mock") ? "mock" : engines.has("sample") ? "sample" : "none";
   return out;
 }
 
-/** Read one photo: the bundled sample from its transcription, else AI when available, else on-device barcodes. */
+/** Read one photo: AI when available, else on-device barcodes. */
 export async function extractOne(p: CasePhoto, opts: { ai: boolean }): Promise<Extraction> {
-  if (p.url === SAMPLE_EP) return structuredClone(SAMPLE);
   const blob = await photoBlob(p);
   if (!blob) return { engine: "none", patients: [] };
   let r: Extraction | null = null;

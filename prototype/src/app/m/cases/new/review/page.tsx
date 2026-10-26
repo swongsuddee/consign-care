@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Camera, CheckCircle2, ChevronLeft, ChevronRight, Download, Plus, ScanLine, Search, Sparkles, UserRound } from "lucide-react";
+import { AlertTriangle, Camera, CheckCircle2, ChevronLeft, ChevronRight, Dices, Download, Plus, ScanLine, Search, Sparkles, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -12,7 +12,7 @@ import { toast } from "@/components/toast";
 import { Badge, Button, EmptyState, Field, Input, Modal, Select, Tabs, cx } from "@/components/ui";
 import { useT } from "@/i18n";
 import * as ops from "@/lib/ops";
-import { aiAvailable, extract, merge, originals, SAMPLE_EP, type Engine, type ExtractedItem } from "@/lib/extract";
+import { aiAvailable, extract, merge, originals, type Engine, type ExtractedItem } from "@/lib/extract";
 import { captured, saveToGallery } from "@/lib/photos";
 import { stickerSamples } from "@/lib/samples";
 import { OCR_TEMPLATES } from "@/lib/seed";
@@ -109,10 +109,9 @@ export default function OcrReviewPage() {
     const t1 = setTimeout(() => alive && setPhase(1), 500);
     (async () => {
       const ai = await aiAvailable();
-      // the bundled sample is always read fresh, so its demo details follow the current transcription
-      const cached = Object.fromEntries(Object.entries(draft.extracted ?? {}).filter(([id]) => draft.photos.find((p) => p.id === id)?.url !== SAMPLE_EP));
+      const cached = draft.extracted ?? {};
       const real = draft.photos.filter((p) => !p.url.startsWith("sample-") || cached[p.id]);
-      const ex = merge([...real.filter((p) => cached[p.id]).map((p) => cached[p.id]), await extract(real.filter((p) => !cached[p.id]), { ai })]);
+      const ex = merge([...(draft.mock ? [draft.mock] : []), ...real.filter((p) => cached[p.id]).map((p) => cached[p.id]), await extract(real.filter((p) => !cached[p.id]), { ai })]);
       // the drawn sample sheets keep their per-procedure template
       const legacy = draft.photos.filter((p) => p.url.startsWith("sample-") && !cached[p.id]);
       await new Promise((r) => setTimeout(r, 900));
@@ -123,7 +122,7 @@ export default function OcrReviewPage() {
         hn: p.hn ?? (gi === 0 ? draft.patientHn ?? "" : ""),
         an: p.an ?? "",
         patientName: p.name ?? (gi === 0 ? draft.patientName ?? "" : ""),
-        doctorId: d.doctors.find((x) => x.code && x.code === p.doctorCode)?.id ?? draft.doctorId ?? "",
+        doctorId: p.doctorId ?? d.doctors.find((x) => x.code && x.code === p.doctorCode)?.id ?? draft.doctorId ?? "",
         lines: p.items.map((it, i) => toLine(d, it, "OCR", `g${gi}-${i}`)),
       }));
       if (legacy.length) {
@@ -150,7 +149,8 @@ export default function OcrReviewPage() {
       }
       const h = matchHospital(d, ex.hospitalName);
       if (h && !draft.hospitalId) setHospitalId(h.id);
-      setHospitalRead(ex.hospitalName);
+      // mock data has no photo to read the hospital from; it is already chosen
+      if (!draft.mock) setHospitalRead(ex.hospitalName);
       if (ex.date && !draft.hospitalId) setCaseDate(ex.date);
       setEngine(legacy.length && ex.engine === "none" ? "sample" : ex.engine);
       setModel(ex.model);
@@ -244,7 +244,7 @@ export default function OcrReviewPage() {
   };
 
   const engineLabel =
-    engine === "ai" ? t("m.ocr.engine.ai", { model: model ?? "Claude" }) : engine === "barcode" ? t("m.ocr.engine.barcode") : engine === "sample" ? t("m.ocr.engine.sample") : "";
+    engine === "ai" ? t("m.ocr.engine.ai", { model: model ?? "Claude" }) : engine === "barcode" ? t("m.ocr.engine.barcode") : engine === "sample" ? t("m.ocr.engine.sample") : engine === "mock" ? t("m.ocr.engine.mock") : "";
   const ready = phase === 3 && itemCount > 0;
   const n = groups.length;
   const g = page >= 0 ? groups[page] : undefined;
@@ -281,7 +281,12 @@ export default function OcrReviewPage() {
               {draft.photos.slice(0, 3).map((p) => (
                 <PhotoThumb key={p.id} url={p.url} className="h-36 flex-1 rounded-none" />
               ))}
-              {!draft.photos.length && <div className="grid h-24 flex-1 place-items-center text-slate-500"><ScanLine className="h-8 w-8" /></div>}
+              {!draft.photos.length && (
+                <div className={cx("flex flex-1 items-center justify-center gap-2 text-sm font-medium text-slate-500", draft.mock ? "h-16" : "h-24")}>
+                  {draft.mock ? <Dices className="h-7 w-7 text-violet-500" /> : <ScanLine className="h-8 w-8" />}
+                  {draft.mock && t("m.ocr.engine.mock")}
+                </div>
+              )}
             </div>
             {draft.photos.length > 3 && <span className="absolute bottom-2 right-2 rounded-full bg-navy-900/70 px-2 py-0.5 text-[11px] font-semibold text-white">+{draft.photos.length - 3}</span>}
             {phase < 3 && (
@@ -327,7 +332,7 @@ export default function OcrReviewPage() {
           <>
             {/* patient count first */}
             <div className="rounded-2xl bg-white p-4 text-center shadow-card">
-              <p className="text-xs font-medium text-slate-500">{t("m.ocr.found")}</p>
+              <p className="text-xs font-medium text-slate-500">{t(draft.mock ? "m.ocr.foundMock" : "m.ocr.found")}</p>
               <p className="mt-1 flex items-baseline justify-center gap-2 text-navy-800">
                 <span className="text-5xl font-bold tabular-nums">{n}</span>
                 <span className="text-lg font-semibold">{t("m.ocr.patientsUnit")}</span>
@@ -449,7 +454,7 @@ export default function OcrReviewPage() {
                         <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[10px] font-medium">
                           {l.source === "OCR" && l.confidence !== undefined && (
                             <span className={low ? "text-amber-600" : "text-emerald-600"}>
-                              {engine === "barcode" ? "BARCODE" : "AI"} {Math.round(l.confidence * 100)}%{low && ` · ${t("m.ocr.lowConf")}`}
+                              {engine === "barcode" ? "BARCODE" : engine === "mock" ? t("m.ocr.mockTag") : "AI"} {Math.round(l.confidence * 100)}%{low && ` · ${t("m.ocr.lowConf")}`}
                             </span>
                           )}
                           {l.source !== "OCR" && <span className="text-brand-600">{t(`src.${l.source}`)}</span>}

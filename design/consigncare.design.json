@@ -4178,7 +4178,7 @@
           "required": false,
           "unique": false,
           "references": null,
-          "note": "hospital doctor code printed on patient stickers, e.g. 1152"
+          "note": "hospital doctor code printed on patient stickers, e.g. 2048"
         },
         {
           "id": "doctor-name",

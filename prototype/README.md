@@ -16,8 +16,8 @@ platform for a Thai medical-device distributor. It includes a sales-rep mobile a
 > 2. **On the device:** without a key, barcodes are decoded in the browser (zxing-wasm, self-hosted wasm in `public/wasm`) and
 >    grouped into patients by the gaps between sticker rows, or where a REF repeats. A photo under 2000 px is read again at
 >    2.5× and 3×, which recovers most stickers in a ~1000 px shot. The longest codes still need the full-size photo or the AI.
-> 3. **Sample sheet:** `public/samples/ep-usage-sheet.jpg` is the Phayathai Sriracha sheet with patient names, birth dates and the
->    doctor's name redacted. It uses a fixed transcription, so the demo works offline.
+> 3. **Mock data:** with no camera, **Create mock data** on New Case makes 1–3 fictional patients with equipment from the
+>    hospital's real stock (`src/lib/mock.ts`) and opens them on the patient pages, so the demo works offline.
 > Use **Reset demo data** (mobile side panel, mobile Settings, or `/admin/settings`) to restore the seed.
 
 ## Run
@@ -46,7 +46,7 @@ npm run preview:pages                          # serves out/ on :3200 (build wit
 What differs on the static site:
 
 - **No server, so no AI reading.** `/api/extract` is left out of the build; photos are read by the on-device barcode
-  decoder and the sample sheet uses its fixed transcription.
+  decoder, and **Create mock data** needs no photo at all.
 - **Every seeded record has its own page** (cases, quotations, requisitions, PRs, products, accounts, printable
   documents). A record created in the browser has none, so GitHub Pages serves `404.html`, which forwards to the
   route's `_` page with the id in the query (`/m/cases/_/?id=case-…`). `useRouteParam` reads it from there.

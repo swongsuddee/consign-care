@@ -40,7 +40,7 @@ export const entities: Entity[] = [
     ["user_id", "uuid", { ref: "ent-user" }], ["hospital_id", "uuid", { ref: "ent-hospital" }],
   ]),
   E("ent-doctor", "Doctor", "Surgeon at a hospital; optional on a case.", ["uc-new-case", "uc-master"], col(2), row(0), [
-    ["hospital_id", "uuid", { ref: "ent-hospital" }], ["code", "text", { opt: true, note: "hospital doctor code printed on patient stickers, e.g. 1152" }], ["name", "text"], ["specialty", "text", { opt: true }],
+    ["hospital_id", "uuid", { ref: "ent-hospital" }], ["code", "text", { opt: true, note: "hospital doctor code printed on patient stickers, e.g. 2048" }], ["name", "text"], ["specialty", "text", { opt: true }],
   ]),
   E("ent-supplier", "Supplier", "Manufacturer or importer the distributor buys from.", ["uc-pr", "uc-master"], col(6), row(0), [
     ["name", "text"], ["email", "text"], ["tax_id", "text"],

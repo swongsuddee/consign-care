@@ -107,7 +107,7 @@ export function usageRows(d: Data) {
 }
 
 /** Decode a scanned barcode: GS1 (01)GTIN(17)YYMMDD(10)LOT, plain GTIN/EAN, product REF or lot no */
-/** Hospital consignment sticker: "REF LOT SERIAL", e.g. "402570 11325569 184796" */
+/** Hospital consignment sticker: "REF LOT SERIAL", e.g. "410105 21004417 560121" */
 export const STICKER_RE = /^([A-Z0-9][A-Z0-9-]{2,})\s+(\d{6,10})\s+(\d{4,8})$/i;
 
 export function parseSticker(raw: string) {

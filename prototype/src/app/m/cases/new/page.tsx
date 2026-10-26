@@ -1,16 +1,16 @@
 "use client";
 
-import { ChevronRight, ClipboardPen, History, ImagePlus, Images, QrCode } from "lucide-react";
+import { ChevronRight, ClipboardPen, Dices, History, ImagePlus, Images, QrCode } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useRef, useState, type ReactNode } from "react";
-import { PhotoThumb } from "@/components/art";
+import { useMyHospitals } from "@/components/mobile/bits";
 import { MScreen } from "@/components/mobile/MScreen";
 import { toast } from "@/components/toast";
 import { PageLoader, cx } from "@/components/ui";
 import { useT } from "@/i18n";
-import { SAMPLE_EP } from "@/lib/extract";
-import { DEMO_TODAY, uid } from "@/lib/ops";
+import { DEMO_TODAY } from "@/lib/ops";
+import { mockExtraction } from "@/lib/mock";
 import { toCasePhotos } from "@/lib/photos";
 import { useStore } from "@/lib/store";
 import type { CasePhoto } from "@/lib/types";
@@ -20,7 +20,8 @@ import type { CasePhoto } from "@/lib/types";
  * 1. Scan QR / barcode: the rear camera takes a photo of the stickers or the usage sheet.
  * 2. Upload: pick one or more photos from the gallery.
  * 3. Create manually: the form.
- * Photos go to the patient details page (review), which reads them and shows one page per patient.
+ * Photos go to the patient details page (review), which reads them and shows one page per patient. Without a camera,
+ * "create mock data" sends made-up patients there instead.
  */
 export default function NewCaseChoicePage() {
   return (
@@ -40,9 +41,20 @@ function Choice() {
   const gallery = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<"camera" | "gallery" | null>(null);
   const hospital = sp.get("hospital") ?? "";
+  const mine = useMyHospitals();
 
   const start = (photos: CasePhoto[]) => {
     setDraft({ mode: "scan", hospitalId: hospital, caseDate: DEMO_TODAY, photos });
+    router.push("/m/cases/new/review");
+  };
+
+  /** No camera: made-up patients and items from the hospital's real stock, shown on the patient pages like a read photo. */
+  const startMock = () => {
+    const d = useStore.getState().data;
+    const stocked = (id: string) => d.stock.some((s) => s.qty > 0 && d.locations.some((l) => l.id === s.locationId && l.hospitalId === id));
+    const choices = mine.filter((h) => stocked(h.id));
+    const hospitalId = hospital || (choices[Math.floor(Math.random() * choices.length)] ?? mine[0])?.id || "";
+    setDraft({ mode: "scan", hospitalId, caseDate: DEMO_TODAY, photos: [], mock: mockExtraction(d, hospitalId, DEMO_TODAY) });
     router.push("/m/cases/new/review");
   };
 
@@ -90,11 +102,13 @@ function Choice() {
           <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-slate-600">
             <ImagePlus className="h-3.5 w-3.5" /> {t("m.new.samples")}
           </p>
-          <button onClick={() => start([{ id: uid("ph"), url: SAMPLE_EP }])} className="flex w-full items-center gap-3 overflow-hidden rounded-xl bg-white p-1.5 text-left ring-1 ring-brand-200 transition hover:ring-brand-400">
-            <PhotoThumb url={SAMPLE_EP} className="h-14 w-11 shrink-0 rounded-lg" />
+          <button onClick={startMock} className="flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left ring-1 ring-brand-200 transition hover:ring-brand-400">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-violet-50 text-violet-600">
+              <Dices className="h-6 w-6" />
+            </span>
             <span className="min-w-0">
-              <span className="block text-xs font-semibold text-slate-800">{t("m.new.sampleEp")}</span>
-              <span className="block text-[11px] text-slate-500">12 × REF · LOT · SN — {t("m.new.sampleRedacted")}</span>
+              <span className="block text-sm font-semibold text-slate-800">{t("m.new.optMock")}</span>
+              <span className="block text-[11px] leading-snug text-slate-500">{t("m.new.optMockDesc")}</span>
             </span>
           </button>
         </div>

@@ -35,12 +35,12 @@ export function poSamples(d: Data): SampleCode[] {
 /** Equipment stickers as printed by the hospital: "REF LOT SERIAL" (Phayathai Sriracha sheet) */
 export function stickerSamples(): SampleCode[] {
   return [
-    "ENSITE-SEK-5-I-01 11411683 183001",
-    "402570 11325569 184797",
-    "402811 11380356 190255",
-    "401980 11445151 186685",
-    "IBI-81102 11420679 180937",
-    "401436 11534387 193084",
+    "MAP-KIT-3-01 21005803 560115",
+    "410105 21004417 560123",
+    "410212 21005582 560137",
+    "410320 21006139 560144",
+    "ABL-20511 21005906 560160",
+    "410438 21007264 560168",
     "999999 12345678 000001",
   ].map((code, i, all) => ({ label: code.split(" ")[0], code, hint: i === all.length - 1 ? "✕" : "REF LOT SN" }));
 }

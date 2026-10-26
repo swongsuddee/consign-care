@@ -343,6 +343,8 @@ export interface OcrDraft {
   scanned?: string[];
   /** equipment picked from the hospital's consignment stock list */
   picked?: PickedItem[];
+  /** made-up usage for a demo without a camera (lib/mock.ts), read on the patient pages like a photo */
+  mock?: Extraction;
   /** what each photo was read as when it was added, by photo id (review reuses it instead of reading again) */
   extracted?: Record<string, Extraction>;
 }

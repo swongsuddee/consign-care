@@ -1,4 +1,4 @@
-# original photos and screenshots: real patient data, kept local (the redacted sample is prototype/public/samples)
+# original photos and screenshots: real patient data, kept local and never committed
 /IMG_*
 
 # Truss exports
